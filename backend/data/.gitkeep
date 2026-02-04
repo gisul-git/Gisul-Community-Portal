@@ -1,0 +1,5 @@
+# This directory stores FAISS index files
+# faiss_index.bin - FAISS vector index
+# vector_store.pkl - Metadata mapping for vectors
+
+

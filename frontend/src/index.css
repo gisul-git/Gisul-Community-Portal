@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  @apply text-gray-800;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Auth pages background - covers entire viewport */
+body:has([data-auth-page]),
+html:has([data-auth-page]) {
+  background: linear-gradient(to bottom right, #faf5ff, #e9d5ff) !important;
+  min-height: 100vh;
+}
+
+#root:has([data-auth-page]) {
+  background: transparent;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+[data-auth-page] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh !important;
+  overflow: hidden !important;
+  z-index: 1;
+}
+
+/* Root element scaling support */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  background-color: #f9f9f9; /* Ensure root has background */
+}
+
+/* Ensure app-scale-container is visible */
+.app-scale-container {
+  position: relative;
+  background-color: #f9f9f9;
+  min-height: 100vh;
+}
+
+/* Debug: Ensure content is always visible */
+.app-scale-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Custom focus ring colors */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  ring-color: #6953a3;
+  border-color: #6953a3;
+}
+
+/* Responsive text utilities */
+@media (max-width: 640px) {
+  .text-responsive {
+    font-size: 0.875rem;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better touch targets for mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Global App Scaling Container */
+.app-scale-container {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ensure charts and interactive elements scale properly */
+.app-scale-container canvas,
+.app-scale-container svg,
+.app-scale-container iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent text blur on scaled elements */
+.app-scale-container * {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Desktop container width - 75% */
+@media (min-width: 1024px) {
+  /* Override Tailwind container class */
+  .container {
+    max-width: 75vw !important;
+    width: 100% !important;
+  }
+  
+  /* Ensure main content areas are also 75% on desktop */
+  .main-content-desktop {
+    max-width: 75vw !important;
+    width: 100% !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Override max-w-* classes on desktop to respect parent 75% width */
+  .main-content-desktop .max-w-4xl,
+  .main-content-desktop .max-w-5xl,
+  .main-content-desktop .max-w-6xl,
+  .main-content-desktop .max-w-7xl {
+    max-width: 100% !important;
+  }
+}
