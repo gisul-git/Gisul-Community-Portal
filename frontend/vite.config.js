@@ -13,18 +13,19 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+
     server: {
       host: env.VITE_DEV_SERVER_HOST || "0.0.0.0",
-      // CRITICAL FIX: Must match NGINX proxy port
-      port: Number(env.VITE_DEV_SERVER_PORT || 8080),
-      strictPort: true, 
-      
-      // CRITICAL: Configure for SPA routing
-      // This prevents Vite from issuing redirects for routes
+
+      // ✅ UPDATED: Dev server port changed from 8080 → 5173
+      port: 5173,
+      strictPort: true,
+
+      // SPA routing support
       fs: {
         strict: false,
       },
-      
+
       proxy: {
         "/api": {
           target: proxyTarget,
@@ -32,14 +33,14 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    
-    // CRITICAL: Preview server must also use port 8080
+
+    // ✅ UPDATED: Preview server port also changed
     preview: {
       host: "0.0.0.0",
-      port: 8080,
+      port: 5173,
       strictPort: true,
     },
-    
+
     build: {
       target: "es2015",
       minify: "esbuild",
@@ -50,7 +51,7 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    
+
     optimizeDeps: {
       esbuildOptions: {
         target: "es2015",

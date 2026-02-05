@@ -6,7 +6,17 @@ import Plot from "react-plotly.js";
 import BulkUpload from "./BulkUpload.jsx";
 import UnifiedTrainerSearch from "./UnifiedTrainerSearch.jsx";
 import ActivityInsights from "./ActivityInsights.jsx";
-import { getAllTrainers, deleteTrainerByAdmin, getPendingRequirementsCount, getAdminRequirements, approveRequirement, updateTrainerByAdmin, analyticsQuery, getSkillDomains, expandDomain } from "../api";
+import { 
+  getAllTrainers, 
+  deleteTrainerByAdmin, 
+  getPendingRequirementsCount, 
+  getAdminRequirements, 
+  approveRequirement, 
+  updateTrainerByAdmin, 
+  analyticsQuery, 
+  getSkillDomains, 
+  expandDomain 
+} from "../api";
 import gisulLogo from "../assets/gisul final logo yellow-01 2.webp";
 
 export default function AdminDashboard({ token, onLogout }) {
@@ -43,8 +53,6 @@ export default function AdminDashboard({ token, onLogout }) {
       const tabParam = params.get('tab');
       const cleanUrl = tabParam ? `/admin/dashboard?tab=${tabParam}` : '/admin/dashboard';
       window.history.replaceState({}, document.title, cleanUrl);
-      // Optionally trigger page reload to update auth state
-      // Note: App.jsx should handle this, but this ensures no redirect loops
     }
   }, []);
 
@@ -75,137 +83,100 @@ export default function AdminDashboard({ token, onLogout }) {
     }
   }, [token]);
 
+  // Navbar Items Configuration
+  const navItems = [
+    { 
+      id: "upload", 
+      label: "Bulk Upload", 
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /> 
+    },
+    { 
+      id: "search", 
+      label: "Search", 
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /> 
+    },
+    { 
+      id: "list", 
+      label: "Trainers", 
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /> 
+    },
+    { 
+      id: "analytics", 
+      label: "Analytics", 
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /> 
+    },
+    { 
+      id: "activity", 
+      label: "Activity", 
+      icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /> 
+    },
+  ];
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f9f9f9" }}>
-      {/* Enhanced Navbar with Premium Design */}
-      <header
-        className="text-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 relative shadow-xl backdrop-blur-md border-b border-white/10"
-        style={{ 
-          background: "linear-gradient(135deg, #6953a3 0%, #8b7bb8 50%, #6953a3 100%)",
-          backgroundSize: "200% 200%",
-          animation: "gradientShift 8s ease infinite"
-        }}
-      >
-        {/* Animated background overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-transparent to-purple-600/20 opacity-50"></div>
-        
-        <div className="relative z-10 flex items-center justify-between">
-          {/* Logo and text on the left corner */}
-          <div className="flex items-center gap-3 group">
-            <div className="relative">
-              <img 
-                src={gisulLogo} 
-                alt="GISUL Logo" 
-                className="h-16 sm:h-20 md:h-24 lg:h-32 w-auto transition-all duration-300 group-hover:scale-110 group-hover:rotate-2 drop-shadow-lg"
-              />
-              <div className="absolute inset-0 bg-white/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </div>
-            <div className="hidden md:block h-10 w-px bg-white/30 mx-3"></div>
-            <div className="hidden md:flex flex-col">
-              <span className="text-sm md:text-base text-white/90 font-semibold">GISUL</span>
-              <span className="text-xs md:text-sm text-white/70">Admin Portal</span>
+    <div className="min-h-screen bg-[#f8f9fc] font-sans selection:bg-purple-100 pb-20">
+      
+      {/* --- MAXIMIZED FLOATING NAVBAR (Admin) --- */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6 sm:pt-10 pointer-events-none">
+        <header className="pointer-events-auto flex items-center justify-between w-full max-w-7xl bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
+          
+          {/* Left: Brand Identity */}
+          <div className="flex items-center gap-4 sm:gap-5 pl-1">
+            <img 
+              src={gisulLogo} 
+              alt="GISUL" 
+              className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105" 
+            />
+            <div className="hidden sm:flex flex-col justify-center">
+              <span className="font-extrabold text-gray-900 text-xl sm:text-2xl leading-none tracking-tight">GISUL</span>
+              <span className="text-[10px] sm:text-[12px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Admin Portal</span>
             </div>
           </div>
 
-          {/* Navigation and Logout on the right */}
-          <div className="flex items-center gap-2 sm:gap-3 ml-auto z-10">
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-2">
+          {/* Center: Desktop Navigation (Pills) */}
+          <nav className="hidden xl:flex items-center gap-1">
+            {navItems.map((item) => (
               <button
-                onClick={() => setTab("upload")}
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 text-sm md:text-base ${
-                  tab === "upload" 
-                    ? "bg-white/20 font-semibold shadow-md" 
-                    : "hover:bg-white/10 hover:scale-105"
+                key={item.id}
+                onClick={() => setTab(item.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-200 ${
+                  tab === item.id 
+                    ? "bg-[#6953a3] text-white shadow-lg shadow-purple-200" 
+                    : "text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                 }`}
               >
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                <span>Bulk Upload</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">{item.icon}</svg>
+                <span>{item.label}</span>
               </button>
-              <button
-                onClick={() => setTab("search")}
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 text-sm md:text-base ${
-                  tab === "search" 
-                    ? "bg-white/20 font-semibold shadow-md" 
-                    : "hover:bg-white/10 hover:scale-105"
-                }`}
-              >
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span>Trainer Search</span>
-              </button>
-              <button
-                onClick={() => setTab("list")}
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 text-sm md:text-base ${
-                  tab === "list" 
-                    ? "bg-white/20 font-semibold shadow-md" 
-                    : "hover:bg-white/10 hover:scale-105"
-                }`}
-              >
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-                <span>Trainers List</span>
-              </button>
-              <button
-                onClick={() => {
-                  setTab("analytics");
-                }}
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 text-sm md:text-base ${
-                  tab === "analytics" 
-                    ? "bg-white/20 font-semibold shadow-md" 
-                    : "hover:bg-white/10 hover:scale-105"
-                }`}
-              >
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span>Analytics</span>
-              </button>
-              <button
-                onClick={() => {
-                  setTab("activity");
-                }}
-                className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 text-sm md:text-base ${
-                  tab === "activity" 
-                    ? "bg-white/20 font-semibold shadow-md" 
-                    : "hover:bg-white/10 hover:scale-105"
-                }`}
-              >
-                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>Activity Insights</span>
-              </button>
-            </nav>
-            
-            {/* Notification Bell for Pending Requirements */}
+            ))}
+          </nav>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-3 pr-1">
+            {/* Notification Bell */}
             <button
               onClick={() => {
                 setTab("requirements");
                 navigate("/admin/dashboard?tab=requirements", { replace: true });
               }}
-              className="relative p-2 rounded-lg hover:bg-white/10 transition-all duration-200 group"
+              className={`relative p-3 rounded-full transition-all duration-200 group ${
+                tab === 'requirements' ? "bg-purple-100 text-[#6953a3]" : "hover:bg-gray-100 text-gray-500"
+              }`}
               title="Pending Requirements"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
               {pendingCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white animate-pulse">
                   {pendingCount > 99 ? "99+" : pendingCount}
                 </span>
               )}
             </button>
-            
-            {/* Mobile Menu Button */}
+
+            {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition"
-              aria-label="Toggle menu"
+              className="xl:hidden p-3 rounded-full hover:bg-gray-100 text-gray-500 transition"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileMenuOpen ? (
@@ -215,145 +186,85 @@ export default function AdminDashboard({ token, onLogout }) {
                 )}
               </svg>
             </button>
-            
-            {/* Enhanced Logout button */}
+
+            {/* Logout Button */}
             <button
               onClick={onLogout}
-              className="group relative px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 overflow-hidden flex items-center gap-2"
-              style={{ 
-                backgroundColor: "#f4e403", 
-                color: "#000"
-              }}
+              className="hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#F4E403] text-black font-extrabold text-sm hover:brightness-105 transition-all shadow-lg shadow-yellow-100 active:scale-95"
             >
-              {/* Shine effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-              
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="hidden sm:inline relative z-10">Logout</span>
-              <span className="sm:hidden relative z-10">Out</span>
-              
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-xl bg-yellow-400/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
+              <span>Logout</span>
+              <div className="bg-black/10 rounded-full p-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
             </button>
           </div>
-        </div>
+        </header>
 
-        {/* Bottom border glow */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-
-        <style>{`
-          @keyframes gradientShift {
-            0%, 100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-        `}</style>
-      </header>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b shadow-md">
-          <nav className="flex flex-col p-2">
-            <button
-              onClick={() => { setTab("upload"); setMobileMenuOpen(false); }}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all text-left ${
-                tab === "upload" 
-                  ? "bg-purple-100 font-semibold" 
-                  : "hover:bg-gray-100"
-              }`}
-              style={{ color: tab === "upload" ? "#6953a3" : "#374151" }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <span>Bulk Upload</span>
-            </button>
-            <button
-              onClick={() => { setTab("search"); setMobileMenuOpen(false); }}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all text-left ${
-                tab === "search" 
-                  ? "bg-purple-100 font-semibold" 
-                  : "hover:bg-gray-100"
-              }`}
-              style={{ color: tab === "search" ? "#6953a3" : "#374151" }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <span>Trainer Search</span>
-            </button>
-            <button
-              onClick={() => { setTab("list"); setMobileMenuOpen(false); }}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all text-left ${
-                tab === "list" 
-                  ? "bg-purple-100 font-semibold" 
-                  : "hover:bg-gray-100"
-              }`}
-              style={{ color: tab === "list" ? "#6953a3" : "#374151" }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-              <span>Trainers List</span>
-            </button>
-            <button
-              onClick={() => { 
-                setTab("analytics"); 
-                setMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all text-left ${
-                tab === "analytics" 
-                  ? "bg-purple-100 font-semibold" 
-                  : "hover:bg-gray-100"
-              }`}
-              style={{ color: tab === "analytics" ? "#6953a3" : "#374151" }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <span>Analytics</span>
-            </button>
-            <button
-              onClick={() => {
-                setTab("activity");
-                setMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all text-left ${
-                tab === "activity" 
-                  ? "bg-purple-100 font-semibold" 
-                  : "hover:bg-gray-100"
-              }`}
-              style={{ color: tab === "activity" ? "#6953a3" : "#374151" }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>Activity Insights</span>
-            </button>
-          </nav>
-        </div>
-      )}
-
-      <main className="p-3 sm:p-4 md:p-6 main-content-desktop">
-        {tab === "upload" && <BulkUpload token={token} />}
-        {tab === "search" && <UnifiedTrainerSearch token={token} />}
-        {tab === "list" && (
-          <React.Suspense fallback={<div className="text-center py-8">Loading trainers list...</div>}>
-            <TrainersList token={token} />
-          </React.Suspense>
+        {/* Floating Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="pointer-events-auto absolute top-full mt-4 w-full max-w-xl px-4 animate-fade-in-down">
+            <div className="bg-white/95 backdrop-blur-xl rounded-[32px] shadow-2xl border border-white/50 p-4 flex flex-col gap-2">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => { setTab(item.id); setMobileMenuOpen(false); }}
+                  className={`w-full text-left px-6 py-4 rounded-2xl font-bold transition-all flex items-center gap-3 ${
+                    tab === item.id 
+                      ? "bg-[#6953a3] text-white" 
+                      : "hover:bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">{item.icon}</svg>
+                  {item.label}
+                </button>
+              ))}
+              <div className="h-px bg-gray-100 my-2"></div>
+              <button
+                onClick={onLogout}
+                className="w-full text-left px-6 py-4 rounded-2xl font-bold bg-red-50 text-red-600 hover:bg-red-100 flex items-center gap-3"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </button>
+            </div>
+          </div>
         )}
-        {tab === "analytics" && <InlineAnalytics token={token} />}
-        {tab === "activity" && <ActivityInsights token={token} onLogout={onLogout} embedded={true} />}
-        {tab === "requirements" && <RequirementsApproval token={token} onApproval={() => {
-          // Refresh pending count after approval
-          getPendingRequirementsCount(token).then(res => setPendingCount(res.pending_count || 0));
-        }} />}
+      </div>
+
+      {/* --- Main Content (Padded to clear floating navbar) --- */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 sm:pt-40">
+        <div className="animate-fade-in">
+          {tab === "upload" && <BulkUpload token={token} />}
+          {tab === "search" && <UnifiedTrainerSearch token={token} />}
+          {tab === "list" && (
+            <React.Suspense fallback={<div className="flex justify-center py-20"><div className="w-10 h-10 border-4 border-purple-200 border-t-[#6953a3] rounded-full animate-spin"></div></div>}>
+              <TrainersList token={token} />
+            </React.Suspense>
+          )}
+          {tab === "analytics" && <InlineAnalytics token={token} />}
+          {tab === "activity" && <ActivityInsights token={token} onLogout={onLogout} embedded={true} />}
+          {tab === "requirements" && (
+            <RequirementsApproval 
+              token={token} 
+              onApproval={() => {
+                // Refresh pending count after approval
+                getPendingRequirementsCount(token).then(res => setPendingCount(res.pending_count || 0));
+              }} 
+            />
+          )}
+        </div>
       </main>
+
+      <style>{`
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-fade-in-down { animation: fadeInDown 0.3s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      `}</style>
     </div>
   );
 }
@@ -2361,4 +2272,3 @@ function InlineAnalytics({ token }) {
     </div>
   );
 }
-

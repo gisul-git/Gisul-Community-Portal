@@ -16,8 +16,6 @@ export default function CustomerDashboard({ token, onLogout }) {
       localStorage.setItem('token', urlToken);
       // Clean URL by removing token parameter
       window.history.replaceState({}, document.title, window.location.pathname);
-      // Optionally trigger page reload to update auth state
-      // Note: App.jsx should handle this, but this ensures no redirect loops
     }
   }, []);
 
@@ -36,10 +34,9 @@ export default function CustomerDashboard({ token, onLogout }) {
         if (res.ok) {
           const data = await res.json();
           // Always use the full name from the database (not email)
-          // The name should be "Nishan Kulal" or whatever is stored in the database
           const fullName = data.name ? String(data.name).trim() : "";
           if (fullName) {
-            setCustomerName(fullName); // This will display "Welcome, Nishan Kulal"
+            setCustomerName(fullName); 
           } else {
             // Only fallback to email if full name is not available in database
             console.warn("Customer name not found in database, using email fallback");
@@ -79,117 +76,62 @@ export default function CustomerDashboard({ token, onLogout }) {
   }, [token]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-white to-purple-50">
-      {/* Enhanced Navbar with Premium Design */}
-      <header
-        className="text-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 relative shadow-xl backdrop-blur-md border-b border-white/10"
-        style={{ 
-          background: "linear-gradient(135deg, #6953a3 0%, #8b7bb8 50%, #6953a3 100%)",
-          backgroundSize: "200% 200%",
-          animation: "gradientShift 8s ease infinite"
-        }}
-      >
-        {/* Animated background overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-transparent to-purple-600/20 opacity-50"></div>
-        
-        <div className="relative z-10 flex items-center justify-between">
-          {/* Logo and text on the left corner */}
-          <div className="flex items-center gap-3 group">
-            <div className="relative">
-              <img 
-                src={gisulLogo} 
-                alt="GISUL Logo" 
-                className="h-16 sm:h-20 md:h-24 lg:h-32 w-auto transition-all duration-300 group-hover:scale-110 group-hover:rotate-2 drop-shadow-lg"
-              />
-              <div className="absolute inset-0 bg-white/10 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            </div>
-            <div className="hidden md:block h-10 w-px bg-white/30 mx-3"></div>
-            <div className="hidden md:flex flex-col">
-              <span className="text-sm md:text-base text-white/90 font-semibold">GISUL</span>
-              <span className="text-xs md:text-sm text-white/70">Customer Portal</span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#f8f9fc] font-sans selection:bg-purple-100 pb-20">
+      
+      {/* --- MAXIMIZED FLOATING NAVBAR --- */}
+<div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6 sm:pt-10">
+  <header className="flex items-center justify-between w-full max-w-7xl bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
+    
+    {/* Left: Brand Identity */}
+    <div className="flex items-center gap-4 sm:gap-5 pl-1">
+      <img 
+        src={gisulLogo} 
+        alt="GISUL" 
+        // CHANGED: Increased height to h-16 (mobile) and h-20 (desktop)
+        // 'object-contain' ensures it doesn't get cut off
+        className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105" 
+      />
+      <div className="hidden sm:flex flex-col justify-center">
+        <span className="font-extrabold text-gray-900 text-xl sm:text-2xl leading-none tracking-tight">GISUL</span>
+        <span className="text-[10px] sm:text-[12px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Customer Portal</span>
+      </div>
+    </div>
 
-          {/* Title in the center - Welcome message only */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-            <div className="relative">
-              {customerName ? (
-                <div className="animate-fade-in">
-                  <h1 className="text-base sm:text-xl md:text-2xl lg:text-3xl font-bold tracking-tight drop-shadow-lg">
-                    Welcome, <span className="text-yellow-300">{customerName}</span>
-                  </h1>
-                </div>
-              ) : (
-                <div>
-                  <h1 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">
-                    Customer Dashboard
-                  </h1>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Logout button in the right corner */}
-          <div className="flex items-center ml-auto z-10">
-            <button
-              onClick={onLogout}
-              className="group relative px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-2xl hover:scale-105 active:scale-95 overflow-hidden flex items-center gap-2"
-              style={{ 
-                backgroundColor: "#f4e403", 
-                color: "#000"
-              }}
-            >
-              {/* Shine effect on hover */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-              
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 relative z-10 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span className="hidden sm:inline relative z-10">Logout</span>
-              
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-xl bg-yellow-400/50 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-            </button>
-          </div>
+    {/* Right: Actions */}
+    <div className="flex items-center gap-4 pr-1">
+      {/* Customer Welcome Text */}
+      {customerName && (
+        <div className="hidden md:flex flex-col items-end mr-2">
+          <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Welcome Back</span>
+          <span className="text-sm font-bold text-gray-800">{customerName}</span>
         </div>
+      )}
+      
+      <button
+        onClick={onLogout}
+        className="group flex items-center gap-3 px-3 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-[#F4E403] text-black font-extrabold text-sm sm:text-base hover:brightness-105 transition-all shadow-lg shadow-yellow-100 transform active:scale-95"
+        title="Logout"
+      >
+        <span className="hidden sm:block">Logout</span>
+        <div className="bg-black/10 rounded-full p-1.5 group-hover:bg-black/20 transition-colors">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </div>
+      </button>
+    </div>
+  </header>
+</div>
 
-        {/* Bottom border glow */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
-
-        <style>{`
-          @keyframes gradientShift {
-            0%, 100% {
-              background-position: 0% 50%;
-            }
-            50% {
-              background-position: 100% 50%;
-            }
-          }
-          
-          @keyframes fade-in {
-            from {
-              opacity: 0;
-              transform: translateY(-5px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          
-          .animate-fade-in {
-            animation: fade-in 0.5s ease-out;
-          }
-        `}</style>
-      </header>
-
-      {/* Simplified Tab Navigation */}
-      <div className="bg-white border-b shadow-sm sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
-          <div className="flex gap-1">
+      {/* --- Main Content (Added pt-40 to clear floating navbar) --- */}
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 md:px-8 pt-40 transition-all duration-300">
+        
+        {/* Simplified Tab Navigation (Restored from your code) */}
+        <div className="bg-white border-b shadow-sm rounded-t-2xl mb-6 sticky top-32 z-40">
+          <div className="flex gap-1 overflow-x-auto">
             <button
               onClick={() => setActiveTab("search")}
-              className={`relative px-6 py-4 font-semibold text-base transition-colors duration-200 ${
+              className={`relative px-6 py-4 font-semibold text-base transition-colors duration-200 whitespace-nowrap ${
                 activeTab === "search"
                   ? "text-purple-600"
                   : "text-gray-600 hover:text-purple-600"
@@ -207,7 +149,7 @@ export default function CustomerDashboard({ token, onLogout }) {
             </button>
             <button
               onClick={() => setActiveTab("post_requirement")}
-              className={`relative px-6 py-4 font-semibold text-base transition-colors duration-200 ${
+              className={`relative px-6 py-4 font-semibold text-base transition-colors duration-200 whitespace-nowrap ${
                 activeTab === "post_requirement"
                   ? "text-purple-600"
                   : "text-gray-600 hover:text-purple-600"
@@ -225,7 +167,7 @@ export default function CustomerDashboard({ token, onLogout }) {
             </button>
             <button
               onClick={() => setActiveTab("requirements")}
-              className={`relative px-6 py-4 font-semibold text-base transition-colors duration-200 ${
+              className={`relative px-6 py-4 font-semibold text-base transition-colors duration-200 whitespace-nowrap ${
                 activeTab === "requirements"
                   ? "text-purple-600"
                   : "text-gray-600 hover:text-purple-600"
@@ -243,10 +185,7 @@ export default function CustomerDashboard({ token, onLogout }) {
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Main content with smooth transitions */}
-      <main className="flex-1 p-4 sm:p-6 md:p-8 lg:p-10 transition-all duration-300">
         <div className={`transition-opacity duration-300 ${activeTab === "search" ? "opacity-100" : "opacity-0 hidden"}`}>
           {activeTab === "search" && <TrainerSearchEngine token={token} />}
         </div>
@@ -658,7 +597,7 @@ function TrainerSearchEngine({ token }) {
                                       {/* Show related skills (searched + expanded) */}
                                       {relatedSkills.map(({ skill, isSearched, isExpanded, skillLower }, skillIdx) => (
                               <span 
-                                key={skillIdx}
+                                key={skillIdx} 
                                           className={`px-2 py-1 rounded text-xs font-medium relative ${
                                             isSearched 
                                               ? "bg-yellow-400 text-yellow-900 font-bold ring-2 ring-yellow-500" 
@@ -678,7 +617,7 @@ function TrainerSearchEngine({ token }) {
                                           className="px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-300"
                                         >
                                           +{unrelatedSkills.length} other{unrelatedSkills.length > 1 ? 's' : ''}
-                              </span>
+                                        </span>
                                       )}
                                       
                                       {/* Single tooltip for other skills - appears on hover over skills area */}
@@ -687,23 +626,23 @@ function TrainerSearchEngine({ token }) {
                                           <div className="bg-white border-2 border-gray-300 rounded-lg py-3 px-4 shadow-xl pointer-events-auto">
                                             <div className="text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
                                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                          </svg>
+                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                            </svg>
                                               Other Skills
-                          </div>
+                                          </div>
                                             <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
                                               {unrelatedSkills.map((skill, idx) => (
                                                 <span key={idx} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-medium border border-gray-200">
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                                          {/* Arrow pointer */}
-                                          <div className="absolute top-full left-4 -mt-1 pointer-events-none">
-                                            <div className="w-3 h-3 bg-white border-r-2 border-b-2 border-gray-300 transform rotate-45"></div>
-                          </div>
-                        </div>
+                                                {skill}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                        {/* Arrow pointer */}
+                                        <div className="absolute top-full left-4 -mt-1 pointer-events-none">
+                                          <div className="w-3 h-3 bg-white border-r-2 border-b-2 border-gray-300 transform rotate-45"></div>
+                                        </div>
+                                      </div>
                                       )}
                                     </>
                                   );
@@ -719,7 +658,7 @@ function TrainerSearchEngine({ token }) {
                             {trainer.companies && trainer.companies.length > 0 
                               ? trainer.companies.slice(0, 2).join(", ") + (trainer.companies.length > 2 ? "..." : "")
                               : "N/A"}
-                  </div>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -1208,7 +1147,7 @@ function PostedRequirements({ token }) {
               <div className="text-center py-16">
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gray-100 mb-4">
                   <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
             <p className="text-gray-500 text-lg font-medium mb-2">No requirements posted yet</p>
@@ -1253,7 +1192,7 @@ function PostedRequirements({ token }) {
                         <span className="text-xs font-semibold text-gray-600">Skills:</span>
                         {req.skills.map((skill, skillIdx) => (
                               <span 
-                                key={skillIdx}
+                                key={skillIdx} 
                             className="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-700"
                               >
                                 {skill}
