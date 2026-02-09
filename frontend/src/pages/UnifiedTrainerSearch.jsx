@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { searchByJD, uploadJD, searchByText, API_BASE } from "../api";
 
 export default function UnifiedTrainerSearch({ token }) {
@@ -93,7 +93,7 @@ export default function UnifiedTrainerSearch({ token }) {
       resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
     try {
-      const res = await searchByJD(token, jdTextToUse, "", topK);  // Pass empty location for now
+      const res = await searchByJD(token, jdTextToUse, "", topK); 
       setJdResults(res.matches || []);
       setParsedJD(res.parsed_jd || res.parsed || null);
       setShowJdResults(true);
@@ -205,7 +205,6 @@ export default function UnifiedTrainerSearch({ token }) {
         return;
       }
       
-      // Try email first, then fallback to profile_id
       const isEmail = identifier.includes("@");
       const endpoint = isEmail 
         ? `${API_BASE}/admin/trainer/${encodeURIComponent(identifier)}/download_pdf`
@@ -246,7 +245,6 @@ export default function UnifiedTrainerSearch({ token }) {
     }
     
     try {
-      // Separate emails and profile_ids
       const identifiers = Array.from(selectedTrainers);
       const emails = identifiers.filter(id => id && id.includes("@"));
       const profileIds = identifiers.filter(id => id && !id.includes("@"));
@@ -286,594 +284,390 @@ export default function UnifiedTrainerSearch({ token }) {
   const isLoading = jdLoading || textLoading;
 
   return (
-    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md max-w-[1536px] mx-auto">
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6" style={{ color: "#6953a3" }}>
-        Trainer Search
-      </h2>
-
-      {/* Number of Trainers to Return - Applies to both searches */}
-      <div className="mb-6 p-4 border rounded-lg bg-blue-50 border-blue-200">
-        <label className="block text-sm font-semibold mb-2" style={{ color: "#6953a3" }}>
-          Number of Trainers to Return
-        </label>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={topK}
-            onChange={(e) => setTopK(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
-            className="w-full sm:w-32 p-2 border rounded-md focus:outline-none focus:ring-2 text-sm"
-            style={{ focusRingColor: "#6953a3" }}
-          />
-          <span className="text-xs sm:text-sm text-gray-600">(e.g., top 5 or 10)</span>
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          This setting applies to both JD Search and Trainer Search Engine results
-        </p>
-      </div>
-
-      {/* Search Sections - Side by Side */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-      {/* JD Search Section */}
-      <div className="p-5 sm:p-6 border-2 rounded-xl bg-gradient-to-br from-gray-50 to-purple-50/30 border-purple-200 shadow-sm">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="p-2 rounded-lg bg-purple-100">
-            <svg className="w-5 h-5" style={{ color: "#6953a3" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <h3 className="text-lg sm:text-xl font-bold" style={{ color: "#6953a3" }}>
-            Job Description Search
-          </h3>
-        </div>
+    <div className="bg-[#f8fafc] min-h-screen p-4 sm:p-6 md:p-10 font-sans">
+      <div className="max-w-[1600px] mx-auto">
         
-        {/* File Upload Section */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-3 text-gray-700">
-            📄 Upload JD File
-          </label>
-          <div className="relative">
-            <div className={`border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 ${
-              uploading ? 'border-purple-400 bg-purple-50' : uploadedFileText ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-purple-400 hover:bg-purple-50/50'
-            }`}>
-              <input
-                type="file"
-                accept=".pdf,.doc,.docx,.xls,.xlsx"
-                onChange={handleFileUpload}
-                disabled={uploading || jdLoading}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                id="jd-file-upload"
-              />
-              <div className="pointer-events-none">
-                <svg className="w-12 h-12 mx-auto mb-3" style={{ color: "#6953a3" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-                {uploading ? (
-                  <div>
-                    <p className="text-sm font-medium text-purple-700 mb-1">Processing file...</p>
-                    <div className="w-32 h-1 bg-purple-200 rounded-full mx-auto overflow-hidden">
-                      <div className="h-full bg-purple-600 rounded-full animate-pulse" style={{ width: '60%' }}></div>
-                    </div>
-                  </div>
-                ) : uploadedFileText ? (
-                  <div>
-                    <p className="text-sm font-medium text-green-700 mb-1">✓ File processed successfully</p>
-                    <p className="text-xs text-green-600">Ready to search</p>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-sm font-medium text-gray-700 mb-1">Click to upload or drag and drop</p>
-                    <p className="text-xs text-gray-500">PDF, DOC, DOCX, XLS, XLSX</p>
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* Modern Header Section */}
+        <div className="flex flex-col lg:flex-row justify-between items-center mb-10 gap-6">
+          <div className="text-center lg:text-left">
+            <h2 className="text-4xl font-extrabold tracking-tight text-gray-900 mb-2">
+              Trainer<span className="text-[#6953a3]"> Search</span>
+            </h2>
+    
           </div>
-        </div>
 
-        {/* Divider */}
-        <div className="flex items-center mb-6">
-          <div className="flex-1 border-t border-gray-300"></div>
-          <span className="px-3 text-xs font-medium text-gray-500 uppercase">OR</span>
-          <div className="flex-1 border-t border-gray-300"></div>
-        </div>
-
-        {/* Form Section */}
-        <div className="mb-6">
-          <label className="block text-sm font-semibold mb-4 text-gray-700 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Fill in Job Description Form
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold mb-2 text-gray-700">
-                Domain/Industry <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  value={jdForm.domain}
-                  onChange={(e) => handleFormChange("domain", e.target.value)}
-                  placeholder="e.g., Software Development, Data Science"
-                  className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-sm transition-all"
-                  style={{ focusRingColor: "#6953a3", focusBorderColor: "#6953a3" }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold mb-2 text-gray-700">
-                Experience Required (Years)
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+          {/* Integrated Config Card */}
+          <div className="bg-white px-8 py-4 rounded-3xl shadow-[0_10px_30px_rgba(105,83,163,0.05)] border border-purple-50 flex items-center gap-8">
+            <div className="flex flex-col">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Results Return</label>
+              <div className="flex items-center gap-3">
                 <input
                   type="number"
-                  value={jdForm.experienceYears}
-                  onChange={(e) => handleFormChange("experienceYears", e.target.value)}
-                  placeholder="e.g., 3"
-                  min="0"
-                  className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-sm transition-all"
-                  style={{ focusRingColor: "#6953a3", focusBorderColor: "#6953a3" }}
+                  min="1"
+                  max="50"
+                  value={topK}
+                  onChange={(e) => setTopK(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
+                  className="w-16 p-2 bg-purple-50 text-[#6953a3] font-bold text-xl rounded-xl border-none focus:ring-2 focus:ring-[#6953a3] text-center"
                 />
+                <span className="text-xs font-bold text-gray-400">Profiles</span>
               </div>
             </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-semibold mb-2 text-gray-700">
-                Skills Required (comma-separated) <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute top-3 left-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  value={jdForm.skills}
-                  onChange={(e) => handleFormChange("skills", e.target.value)}
-                  placeholder="e.g., Python, Docker, Kubernetes, AWS"
-                  className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:border-transparent text-sm transition-all"
-                  style={{ focusRingColor: "#6953a3", focusBorderColor: "#6953a3" }}
-                />
+            <div className="h-10 w-px bg-gray-100 hidden sm:block"></div>
+            <div className="flex flex-col items-center">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Engine Status</label>
+              <div className="flex items-center gap-2">
+                <span className={`w-3 h-3 rounded-full ${isLoading ? 'bg-purple-500 animate-pulse' : 'bg-green-500'}`}></span>
+                <span className="text-sm font-bold text-gray-700 uppercase tracking-tighter">{isLoading ? 'Processing' : 'Active'}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {parsedJD && (
-          <div className="mb-6 p-4 border-2 border-blue-200 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 shadow-sm">
-            <h4 className="font-bold mb-3 text-sm flex items-center gap-2" style={{ color: "#6953a3" }}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Parsed JD Information
-            </h4>
-            <div className="space-y-2">
-              {parsedJD.skills && parsedJD.skills.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <span className="text-xs font-semibold text-gray-600 min-w-[80px]">Skills:</span>
-                  <span className="text-xs sm:text-sm text-gray-800">{parsedJD.skills.join(", ")}</span>
+        {/* Action Panels */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-12">
+          
+          {/* JD Matching Panel */}
+          <div className="xl:col-span-5">
+            <div className="bg-white rounded-[40px] p-8 md:p-10 shadow-[0_20px_50px_rgba(105,83,163,0.03)] border border-purple-50 h-full flex flex-col relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-40 h-40 bg-purple-50/50 rounded-full -mr-20 -mt-20 group-hover:scale-110 transition-transform duration-700"></div>
+              
+              <div className="flex items-center gap-4 mb-10 relative">
+                <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-[#6953a3]">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-black text-gray-800">JD Semantic Match</h3>
+              </div>
+
+              {/* Upload Dropzone */}
+              <div className="relative mb-8 group/upload">
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx"
+                  onChange={handleFileUpload}
+                  disabled={uploading || jdLoading}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+                />
+                <div className={`border-4 border-dashed rounded-[32px] p-10 text-center transition-all duration-500 ${
+                  uploadedFileText ? 'border-green-400 bg-green-50/30' : 'border-purple-100 bg-purple-50/20 group-hover/upload:border-purple-300'
+                }`}>
+                  <div className={`w-16 h-16 rounded-[24px] mx-auto mb-4 flex items-center justify-center transition-all ${uploadedFileText ? 'bg-green-100' : 'bg-purple-100'}`}>
+                    <svg className="w-8 h-8" style={{ color: uploadedFileText ? '#10b981' : "#6953a3" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <p className="text-lg font-bold text-gray-800 mb-1">{uploadedFileText ? 'JD Attached' : 'Drop JD Here'}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">PDF • Word • Excel</p>
+                </div>
+              </div>
+
+              {/* Form Input */}
+              <div className="space-y-4 mb-8 flex-1">
+                <div className="relative">
+                  <input
+                    placeholder="Domain / Industry *"
+                    value={jdForm.domain}
+                    onChange={(e) => handleFormChange("domain", e.target.value)}
+                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-purple-100 transition-all outline-none text-sm font-bold"
+                  />
+                  <div className="absolute right-4 top-4 text-gray-300"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>
+                </div>
+                <div className="relative">
+                  <input
+                    placeholder="Key Skills *"
+                    value={jdForm.skills}
+                    onChange={(e) => handleFormChange("skills", e.target.value)}
+                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-purple-100 transition-all outline-none text-sm font-bold"
+                  />
+                  <div className="absolute right-4 top-4 text-gray-300"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div>
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="Years of Exp"
+                    value={jdForm.experienceYears}
+                    onChange={(e) => handleFormChange("experienceYears", e.target.value)}
+                    className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent focus:bg-white focus:border-purple-100 transition-all outline-none text-sm font-bold"
+                  />
+                  <div className="absolute right-4 top-4 text-gray-300"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleJDSearch}
+                disabled={jdLoading || uploading || (!uploadedFileText && !buildJDTextFromForm().trim())}
+                className="w-full py-5 rounded-[24px] text-white font-black text-lg shadow-xl shadow-purple-100 hover:shadow-purple-200 transition-all active:scale-[0.98] disabled:opacity-50"
+                style={{ backgroundColor: "#6953a3" }}
+              >
+                {jdLoading ? 'Analyzing...' : 'Search by JD Match'}
+              </button>
+
+              {parsedJD && (
+                <div className="mt-8 p-6 rounded-[28px] bg-gradient-to-br from-blue-50/50 to-purple-50/50 border border-blue-100/50">
+                  <p className="text-[10px] font-black text-[#6953a3] uppercase tracking-widest mb-3">AI Intelligence Extraction</p>
+                  {parsedJD.skills && <p className="text-xs font-bold text-gray-700 leading-relaxed mb-1"><span className="opacity-50 uppercase mr-2">Skills:</span> {parsedJD.skills.join(", ")}</p>}
+                  {parsedJD.experience_years && <p className="text-xs font-bold text-gray-700"><span className="opacity-50 uppercase mr-2">Tenure:</span> {parsedJD.experience_years} Years</p>}
                 </div>
               )}
-              {parsedJD.experience_years && (
-                <div className="flex items-start gap-2">
-                  <span className="text-xs font-semibold text-gray-600 min-w-[80px]">Experience:</span>
-                  <span className="text-xs sm:text-sm text-gray-800">{parsedJD.experience_years} years</span>
+            </div>
+          </div>
+
+          {/* Search Engine Panel */}
+          <div className="xl:col-span-7">
+            <div className="h-full bg-white rounded-[40px] p-12 md:p-20 shadow-[0_20px_50px_rgba(105,83,163,0.03)] border border-purple-50 flex flex-col justify-center items-center text-center relative overflow-hidden">
+              <div className="absolute bottom-0 left-0 w-full h-2 bg-gradient-to-r from-[#6953a3] via-purple-300 to-[#f4e403]"></div>
+              
+              <div className="max-w-2xl w-full z-10">
+                <div className="w-24 h-24 bg-[#f4e403]/10 rounded-[32px] flex items-center justify-center mx-auto mb-10 transform rotate-12 shadow-xl shadow-yellow-50/50">
+                   <svg className="w-12 h-12 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                   </svg>
                 </div>
-              )}
-              {parsedJD.domain && (
-                <div className="flex items-start gap-2">
-                  <span className="text-xs font-semibold text-gray-600 min-w-[80px]">Domain:</span>
-                  <span className="text-xs sm:text-sm text-gray-800">{parsedJD.domain}</span>
+                
+                <h2 className="text-6xl font-black text-gray-900 mb-4 tracking-tighter uppercase">Trainer Search</h2>
+                <p className="text-gray-400 font-bold text-xl mb-12 leading-relaxed">Discover experts using semantic natural language context.</p>
+
+                <div className="relative group mb-10">
+                  <input
+                    type="text"
+                    placeholder="Search e.g. 'React trainer from Bangalore'..."
+                    className="w-full pl-10 pr-48 py-9 rounded-[40px] bg-gray-50 border-4 border-transparent focus:bg-white focus:border-purple-50 transition-all outline-none text-2xl font-bold shadow-inner placeholder-gray-300"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                  />
+                  <button
+                    onClick={handleTextSearch}
+                    disabled={textLoading || !searchQuery.trim()}
+                    className="absolute right-4 top-4 bottom-4 px-12 rounded-[32px] text-white font-black text-xl transition-all active:scale-[0.95] shadow-xl shadow-purple-100"
+                    style={{ backgroundColor: "#6953a3" }}
+                  >
+                    {textLoading ? '...' : 'Search'}
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-3">
+                  {['SAP HANA', 'NodeJS Expert', 'Soft Skills', 'DevOps'].map(tag => (
+                    <button 
+                      key={tag} 
+                      onClick={() => setSearchQuery(tag)}
+                      className="px-5 py-2.5 bg-gray-50 text-gray-500 rounded-full text-xs font-black hover:bg-[#6953a3] hover:text-white transition-all border border-gray-100 uppercase tracking-widest shadow-sm"
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Toolbar for Selection and Actions (Sticky) */}
+        {(currentResults.length > 0 || isLoading) && (
+          <div ref={resultsRef} className="sticky top-6 z-50 mb-12">
+            <div className="bg-white/95 backdrop-blur-2xl px-12 py-8 rounded-[48px] shadow-[0_30px_90px_rgba(0,0,0,0.12)] border border-white/50 flex flex-col md:flex-row justify-between items-center gap-8">
+              <div className="flex items-center gap-6">
+                <div className="w-16 h-16 rounded-3xl bg-purple-50 flex items-center justify-center text-[#6953a3] shadow-inner relative overflow-hidden">
+                  <svg className="w-8 h-8 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                </div>
+                <div>
+                  <p className="font-black text-gray-900 text-3xl leading-none mb-1 uppercase tracking-tighter">Expert Discovery</p>
+                  {!isLoading && <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Optimized Cluster Ranking</p>}
+                </div>
+              </div>
+
+              {!isLoading && (
+                <div className="flex items-center gap-5">
+                  <div className="flex items-center gap-4 bg-gray-50 px-8 py-5 rounded-3xl border border-gray-100 shadow-inner group/select">
+                    <input
+                      type="checkbox"
+                      checked={currentResults.length > 0 && currentResults.every(r => selectedTrainers.has(r.email || r.profile_id))}
+                      onChange={(e) => {
+                        const allIds = new Set(selectedTrainers);
+                        if (e.target.checked) currentResults.forEach(r => allIds.add(r.email || r.profile_id));
+                        else currentResults.forEach(r => allIds.delete(r.email || r.profile_id));
+                        setSelectedTrainers(allIds);
+                      }}
+                      className="w-6 h-6 rounded-lg border-2 border-gray-200 accent-[#6953a3] cursor-pointer"
+                      id="select-all-master"
+                    />
+                    <label htmlFor="select-all-master" className="text-xs font-black text-gray-400 uppercase tracking-widest cursor-pointer select-none group-hover/select:text-gray-600 transition-colors">Global Select</label>
+                  </div>
+
+                  {selectedTrainers.size > 0 && (
+                    <div className="flex items-center gap-5 animate-in fade-in slide-in-from-right-10 duration-700">
+                      <div className="px-10 py-5 rounded-[24px] font-black text-sm shadow-2xl shadow-yellow-100/50" style={{ backgroundColor: "#f4e403" }}>
+                        {selectedTrainers.size} TRAINERS
+                      </div>
+                      <button 
+                        onClick={handleExportToExcel}
+                        className="px-12 py-5 rounded-[24px] text-white font-black text-sm transition-all hover:opacity-90 active:scale-95 shadow-2xl shadow-purple-200"
+                        style={{ backgroundColor: "#6953a3" }}
+                      >
+                        EXPORT XLSX
+                      </button>
+                    </div>
+                  )}
+                  
+                  <button onClick={handleClear} className="p-5 text-gray-200 hover:text-red-500 transition-all hover:rotate-90">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                  </button>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        <div className="flex justify-center sm:justify-start">
-          <button
-            onClick={handleJDSearch}
-            disabled={jdLoading || uploading || (!uploadedFileText && !buildJDTextFromForm().trim())}
-            className="group relative px-6 sm:px-8 py-3 sm:py-3.5 rounded-lg font-semibold text-sm sm:text-base text-white transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none flex items-center gap-2"
-            style={{ backgroundColor: "#6953a3" }}
-            title={uploading ? "Please wait for file processing to complete" : (!uploadedFileText && !buildJDTextFromForm().trim()) ? "Please upload a JD file or fill in the form" : ""}
-          >
-            {jdLoading ? (
-              <>
-                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Searching...</span>
-              </>
-            ) : uploading ? (
-              <>
-                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Processing file...</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span>Search by JD</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Trainer Search Engine Section - Google Style */}
-      <div className="flex flex-col items-center justify-center min-h-[500px] py-12 px-4 bg-white">
-        {/* Logo/Title - Google Style */}
-        <div className="mb-10">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <svg className="w-10 h-10" style={{ color: "#6953a3" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <h1 className="text-5xl sm:text-6xl font-light text-gray-900" style={{ fontFamily: 'Arial, sans-serif', letterSpacing: '-2px' }}>
-              Trainer Search
-            </h1>
+        {/* Result States (Every Original Detail Maintained) */}
+        {!isLoading && hasSearched && currentResults.length === 0 && activeSearchType === 'text' && (
+          <div className="text-center py-40 bg-white rounded-[64px] border-8 border-dashed border-gray-50/50 shadow-inner">
+             <div className="w-28 h-28 bg-gray-50 rounded-[48px] flex items-center justify-center mx-auto mb-10 shadow-inner">
+                <svg className="w-14 h-14 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+             </div>
+             <p className="text-4xl font-black text-gray-300 tracking-tighter mb-4 uppercase">Zero Neural Hits</p>
+             <p className="text-gray-400 font-bold text-sm uppercase tracking-[0.4em] mb-12">Search query yielded no matches.</p>
+             <button onClick={handleClear} className="px-14 py-6 bg-[#6953a3] text-white font-black rounded-3xl text-xs tracking-[0.4em] shadow-2xl shadow-purple-200 transition-all active:scale-95">FLUSH ENGINE</button>
           </div>
-        </div>
+        )}
 
-        {/* Google-style Search Box */}
-        <div className="w-full max-w-2xl mb-8">
-          <div className="relative group">
-            {/* Search Icon */}
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-10">
-              <svg className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            
-            {/* Main Search Input - Google-style rounded */}
-            <input
-              type="text"
-              placeholder="Search trainers by skills, location or both"
-              className="w-full pl-14 pr-12 py-3.5 text-base border border-gray-300 rounded-full shadow-sm hover:shadow-md focus:outline-none focus:shadow-lg focus:border-gray-400 transition-all duration-200 bg-white"
-              style={{ 
-                fontFamily: 'Arial, sans-serif',
-                fontSize: '16px'
-              }}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            
-            {/* Clear Icon (when there's text) - Google style */}
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                aria-label="Clear search"
-              >
-                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+        {!isLoading && showJdResults && currentResults.length === 0 && activeSearchType === 'jd' && (
+          <div className="text-center py-40 bg-white rounded-[64px] border-8 border-dashed border-gray-50/50 shadow-inner">
+             <div className="w-28 h-28 bg-gray-50 rounded-[48px] flex items-center justify-center mx-auto mb-10 shadow-inner">
+                <svg className="w-14 h-14 text-gray-200/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+             </div>
+             <p className="text-4xl font-black text-gray-300 tracking-tighter mb-4 uppercase">No matches found</p>
+             <p className="text-gray-400 font-bold text-sm uppercase tracking-[0.4em]">The JD parameters do not correlate with existing trainer nodes.</p>
           </div>
-        </div>
+        )}
 
-        {/* Google-style Search Buttons */}
-        <div className="flex items-center gap-4 mb-6">
-          <button
-            onClick={handleTextSearch}
-            disabled={textLoading || !searchQuery.trim()}
-            className="px-6 py-2.5 bg-gray-50 hover:bg-gray-100 border border-transparent hover:border-gray-300 text-sm text-gray-700 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
-            style={{ fontFamily: 'Arial, sans-serif' }}
-          >
-            {textLoading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Searching...
-              </span>
-            ) : (
-              'Trainer Search'
-            )}
-          </button>
-          <button
-            onClick={handleClear}
-            disabled={isLoading || (!searchQuery && !hasSearched)}
-            className="px-6 py-2.5 bg-gray-50 hover:bg-gray-100 border border-transparent hover:border-gray-300 text-sm text-gray-700 rounded-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow"
-            style={{ fontFamily: 'Arial, sans-serif' }}
-          >
-            Clear
-          </button>
-        </div>
-
-        {/* Subtle tip text - Google style */}
-        <div className="text-sm text-gray-500 text-center max-w-xl">
-          <p>Search by skills, location or both (e.g., "etl trainer from bangalore")</p>
-        </div>
-      </div>
-      </div>
-
-      {/* Results Section */}
-      {selectedTrainers.size > 0 && (
-        <div className="mb-4 p-2 sm:p-3 rounded-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2" style={{ backgroundColor: "#f4e403" }}>
-          <span className="font-semibold text-black text-xs sm:text-sm">
-            {selectedTrainers.size} trainer(s) selected
-          </span>
-          <button
-            onClick={handleExportToExcel}
-            className="px-3 sm:px-4 py-2 rounded-lg text-white font-semibold transition hover:opacity-90 text-xs sm:text-sm whitespace-nowrap"
-            style={{ backgroundColor: "#6953a3" }}
-          >
-            Export to Excel
-          </button>
-        </div>
-      )}
-
-      {isLoading && (
-        <div ref={resultsRef} className="flex flex-col items-center justify-center py-12 sm:py-16 space-y-4">
-          {/* Animated Spinner */}
-          <div className="relative">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-purple-200 rounded-full"></div>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-transparent border-t-purple-600 rounded-full animate-spin absolute top-0 left-0"></div>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 border-4 border-transparent border-r-purple-400 rounded-full animate-spin absolute top-0 left-0" style={{ animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+        {!isLoading && !hasSearched && !showJdResults && currentResults.length === 0 && (
+          <div className="text-center py-20 border-4 border-dashed border-purple-100 rounded-[56px] bg-[#6953a3]/[0.01]">
+             <p className="text-gray-300 font-black uppercase text-xs tracking-[0.4em] px-10 leading-loose opacity-60">Initialize Neural Discovery or analyze a JD to view matches</p>
           </div>
-          
-          {/* Pulsing Text */}
-          <div className="text-center space-y-2">
-            <p className="text-lg sm:text-xl font-semibold animate-pulse" style={{ color: "#6953a3" }}>
-              Searching for trainers...
-            </p>
-            <p className="text-sm text-gray-500">
-              This may take a few moments
-            </p>
-          </div>
-          
-          {/* Animated Dots */}
-          <div className="flex space-x-2">
-            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-          </div>
-        </div>
-      )}
+        )}
 
-      {!isLoading && hasSearched && currentResults.length === 0 && activeSearchType === 'text' && (
-        <div className="text-center py-8">
-          <p className="text-gray-500 mb-2">No matching trainers found. Try a different search query.</p>
-        </div>
-      )}
+        {/* Profiles Result Grid */}
+        {!isLoading && currentResults.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 pb-32">
+            {currentResults.map((trainer, i) => {
+              const identifier = trainer.email || trainer.profile_id;
+              const isSelected = selectedTrainers.has(identifier);
+              const score = trainer.match_percentage !== undefined 
+                ? trainer.match_percentage 
+                : Math.round((trainer.score || trainer.match_score || 0) * 100);
 
-      {!isLoading && showJdResults && currentResults.length === 0 && activeSearchType === 'jd' && (
-        <div className="text-center py-8">
-          <p className="text-gray-500">No matches found</p>
-        </div>
-      )}
+              return (
+                <div 
+                  key={i}
+                  onClick={() => toggleTrainerSelection(identifier)}
+                  className={`group bg-white rounded-[64px] p-10 border-4 transition-all duration-500 cursor-pointer relative flex flex-col ${
+                    isSelected 
+                    ? 'border-[#6953a3] shadow-[0_40px_100px_rgba(105,83,163,0.18)] scale-[1.03] z-10 bg-purple-50/[0.04]' 
+                    : 'border-transparent shadow-[0_20px_60px_rgba(0,0,0,0.03)] hover:shadow-[0_35px_80px_rgba(0,0,0,0.08)] hover:-translate-y-4'
+                  }`}
+                >
+                  <div className="absolute top-0 right-0 px-10 py-5 rounded-bl-[40px] font-black text-xs text-white z-20 shadow-xl" style={{ backgroundColor: "#6953a3" }}>
+                     {score}% SIMILARITY
+                  </div>
 
-      {!isLoading && !hasSearched && !showJdResults && currentResults.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-500">Enter a search query above to find trainers.</p>
-        </div>
-      )}
-
-      {!isLoading && currentResults.length > 0 && (
-        <div ref={resultsRef}>
-          {(() => {
-        const filteredResults = currentResults.filter(r => {
-          const name = r.name || "";
-          return true; // Keep all trainers, even with N/A names
-        });
-        return filteredResults.length > 0 ? (
-          <div className="space-y-3 sm:space-y-4">
-            <div className="mb-4">
-              <p className="text-xs sm:text-sm text-gray-600 mb-3">
-                Showing {filteredResults.length} matching trainer(s) {filteredResults.length === topK && `(showing top ${topK} results)`}
-              </p>
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={filteredResults.length > 0 && filteredResults.every(r => selectedTrainers.has(r.email || r.profile_id))}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      // Select all
-                      const allIds = new Set(filteredResults.map(r => r.email || r.profile_id));
-                      setSelectedTrainers(allIds);
-                    } else {
-                      // Deselect all
-                      const filteredIds = new Set(filteredResults.map(r => r.email || r.profile_id));
-                      const newSelected = new Set(selectedTrainers);
-                      filteredIds.forEach(id => newSelected.delete(id));
-                      setSelectedTrainers(newSelected);
-                    }
-                  }}
-                  className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer"
-                  title="Select All"
-                />
-                <label className="text-xs sm:text-sm text-gray-700 font-medium cursor-pointer" onClick={() => {
-                  const allSelected = filteredResults.every(r => selectedTrainers.has(r.email || r.profile_id));
-                  if (allSelected) {
-                    // Deselect all
-                    const filteredIds = new Set(filteredResults.map(r => r.email || r.profile_id));
-                    const newSelected = new Set(selectedTrainers);
-                    filteredIds.forEach(id => newSelected.delete(id));
-                    setSelectedTrainers(newSelected);
-                  } else {
-                    // Select all
-                    const allIds = new Set(filteredResults.map(r => r.email || r.profile_id));
-                    setSelectedTrainers(allIds);
-                  }
-                }}>
-                  Select All
-                </label>
-              </div>
-            </div>
-            {filteredResults.map((r, i) => (
-            <div
-              key={i}
-              className={`p-4 sm:p-5 border rounded-lg transition-all duration-200 ${
-                selectedTrainers.has(r.email || r.profile_id)
-                  ? "bg-purple-50 border-purple-400 shadow-md"
-                  : "bg-white hover:bg-purple-50 border-gray-300 hover:border-purple-400"
-              }`}
-            >
-              <div className="flex flex-col sm:flex-row items-start sm:items-start justify-between gap-3">
-                <div className="flex-1 w-full min-w-0">
-                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedTrainers.has(r.email || r.profile_id)}
-                      onChange={() => toggleTrainerSelection(r.email || r.profile_id)}
-                      className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"
-                    />
-                    <div className="font-semibold text-base sm:text-lg break-words" style={{ color: "#6953a3" }}>
-                      {r.name || "Unknown Trainer"}
+                  <div className="flex items-center gap-8 mb-12">
+                    <div className="w-24 h-24 rounded-[36px] bg-purple-50 flex items-center justify-center text-[#6953a3] font-black text-4xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+                      {trainer.name?.[0] || 'T'}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="font-black text-gray-900 text-3xl leading-none mb-3 truncate tracking-tighter uppercase">
+                        {trainer.name || "Anonymous"}
+                      </h4>
+                      <p className="text-gray-400 text-[10px] font-black tracking-[0.35em] flex items-center gap-3 uppercase">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                        {trainer.location && trainer.location.trim() ? trainer.location : "Global Remote"}
+                      </p>
                     </div>
                   </div>
-                  {r.email && r.email.trim() && (
-                    <div className="text-xs sm:text-sm text-gray-600 mb-2 break-words">
-                      <span className="font-semibold">Email:</span> {r.email}
-                    </div>
-                  )}
-                  <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-3 mt-2">
-                    <div className="text-xs sm:text-sm text-gray-700">
-                      <span className="font-semibold">Phone:</span> {r.phone && r.phone.trim() ? r.phone : "N/A"}
-                    </div>
-                    <div className="text-xs sm:text-sm text-gray-700">
-                      <span className="font-semibold">Location:</span> {r.location && r.location.trim() ? r.location : "N/A"}
-                    </div>
-                  </div>
-                  {(() => {
-                    if (r.skills && r.skills.length > 0) {
-                      const skillsText = r.skills.join(", ");
-                      const isExpanded = expandedSkills[i];
-                      const shouldTruncate = skillsText.length > 120;
-                      return (
-                        <div className="text-xs sm:text-sm mt-2 break-words">
-                          <span className="font-semibold">Skills: </span>
-                          <span className="text-gray-700">
-                            {isExpanded || !shouldTruncate ? skillsText : truncateText(skillsText, 120)}
-                          </span>
-                          {shouldTruncate && (
-                            <button
-                              onClick={() => toggleSkills(i)}
-                              className="text-indigo-600 text-sm ml-2 hover:underline font-medium"
-                              style={{ color: "#6953a3" }}
-                            >
-                              {isExpanded ? "View Less" : "View More"}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    } else {
-                      return (
-                        <div className="text-xs sm:text-sm mt-2 break-words">
-                          <span className="font-semibold">Skills: </span>
-                          <span className="text-gray-700">N/A</span>
-                        </div>
-                      );
-                    }
-                  })()}
-                  <div className="text-xs sm:text-sm mt-1">
-                    <span className="font-semibold">Experience: </span>
-                    <span className="text-gray-700">
-                      {r.experience_years ? `${r.experience_years} years` : "N/A"}
-                    </span>
-                  </div>
-                  {r.education && (
-                    <div className="text-xs sm:text-sm mt-1 break-words">
-                      <span className="font-semibold">Education: </span>
-                      <span className="text-gray-700">
-                        {typeof r.education === 'string' ? (
-                          r.education
-                        ) : Array.isArray(r.education) ? (
-                          r.education.map((edu, idx) => 
-                            typeof edu === 'string' ? edu : 
-                            `${edu.degree || ''}${edu.institution ? ` from ${edu.institution}` : ''}${edu.year ? ` (${edu.year})` : ''}`
-                          ).filter(Boolean).join(', ')
-                        ) : typeof r.education === 'object' ? (
-                          <>
-                            {r.education.degree && <span className="font-medium">{r.education.degree}</span>}
-                            {r.education.institution && <span className="ml-2">from {r.education.institution}</span>}
-                            {(r.education.year || r.education.duration) && <span className="ml-2 text-gray-600">({r.education.year || r.education.duration})</span>}
-                            {r.education.CGPA && <span className="ml-2 text-gray-600">- CGPA: {r.education.CGPA}</span>}
-                          </>
-                        ) : (
-                          String(r.education)
+
+                  <div className="space-y-10 flex-1">
+                    {trainer.email && (
+                      <div className="text-xs sm:text-sm text-gray-600 mb-2 break-words leading-relaxed">
+                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mb-1">Expert Identifier</p>
+                        <p className="font-bold text-gray-700">{trainer.email}</p>
+                      </div>
+                    )}
+
+                    <div>
+                      <div className="flex justify-between items-center mb-5">
+                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.3em]">Neural Tech Matrix</p>
+                        {trainer.skills && trainer.skills.join(", ").length > 120 && (
+                          <button onClick={(e) => { e.stopPropagation(); toggleSkills(i); }} className="text-[11px] font-black text-[#6953a3] underline underline-offset-4 tracking-widest uppercase">
+                            {expandedSkills[i] ? 'MINIMIZE' : 'EXPAND'}
+                          </button>
                         )}
-                      </span>
+                      </div>
+                      <div className="flex flex-wrap gap-3">
+                        {trainer.skills && trainer.skills.length > 0 ? (
+                          (expandedSkills[i] ? trainer.skills : trainer.skills.slice(0, 6)).map((skill, idx) => (
+                            <span key={idx} className="px-5 py-2.5 bg-gray-50 text-gray-500 rounded-2xl text-[11px] font-black border border-gray-100 group-hover:bg-white group-hover:border-purple-200 transition-all uppercase tracking-wide">
+                              {skill}
+                            </span>
+                          ))
+                        ) : <span className="text-xs text-gray-300 font-bold italic tracking-wider">No Competency Hub Found</span>}
+                        {(!expandedSkills[i] && trainer.skills?.length > 6) && <span className="text-[11px] font-black text-[#6953a3] py-2.5 opacity-60">+{trainer.skills.length - 6} MORE</span>}
+                      </div>
                     </div>
-                  )}
-                  {r.certifications && r.certifications.length > 0 && (
-                    <div className="text-xs sm:text-sm mt-1 break-words">
-                      <span className="font-semibold">Certifications: </span>
-                      <span className="text-gray-700">{r.certifications.join(", ")}</span>
+
+                    <div className="grid grid-cols-2 gap-6 pt-10 border-t border-gray-50">
+                      <div className="bg-gray-50/70 rounded-[32px] p-6 group-hover:bg-white transition-colors border border-gray-100/50 flex flex-col items-center">
+                        <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-3 text-center">Tenure</p>
+                        <p className="text-2xl font-black text-gray-800 tracking-tighter">{trainer.experience_years ? `${trainer.experience_years} Years` : 'N/A'}</p>
+                      </div>
+                      <div className="bg-gray-50/70 rounded-[32px] p-6 group-hover:bg-white transition-colors border border-gray-100/50 flex flex-col items-center">
+                        <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest mb-3 text-center">Unit</p>
+                        <p className="text-lg font-black text-gray-800 truncate tracking-tight w-full text-center">{trainer.current_company || 'N/A'}</p>
+                      </div>
                     </div>
-                  )}
-                  <div className="text-xs sm:text-sm mt-1 break-words">
-                    <span className="font-semibold">Current Company: </span>
-                    <span className="text-gray-700">{r.current_company || "N/A"}</span>
+
+                    {trainer.education && (
+                      <div className="px-2">
+                        <p className="text-[10px] text-gray-300 font-black uppercase tracking-[0.2em] mb-4">Academic Background</p>
+                        <div className="text-xs font-bold text-gray-500 italic leading-relaxed break-words opacity-80">
+                          {typeof trainer.education === 'string' ? (
+                            trainer.education
+                          ) : Array.isArray(trainer.education) ? (
+                            trainer.education.map((edu, idx) => 
+                              typeof edu === 'string' ? edu : 
+                              `${edu.degree || ''}${edu.institution ? ` from ${edu.institution}` : ''}`
+                            ).filter(Boolean).join(', ')
+                          ) : typeof trainer.education === 'object' ? (
+                            <>
+                              {trainer.education.degree && <span className="font-bold">{trainer.education.degree}</span>}
+                              {trainer.education.institution && <span className="ml-1 opacity-70">@{trainer.education.institution}</span>}
+                            </>
+                          ) : String(trainer.education)}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-xs sm:text-sm mt-1 break-words">
-                    <span className="font-semibold">Companies Worked: </span>
-                    <span className="text-gray-700">
-                      {r.companies && r.companies.length > 0 ? r.companies.join(", ") : "N/A"}
-                    </span>
-                  </div>
-                  {r.clients && r.clients.length > 0 && (
-                    <div className="text-xs sm:text-sm mt-1 break-words">
-                      <span className="font-semibold">Clients: </span>
-                      <span className="text-gray-700">{r.clients.join(", ")}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-3 sm:mt-0 sm:ml-4 flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  {(r.email || r.profile_id) && (
-                    <button
-                      onClick={() => handleDownloadPDF(r.email || r.profile_id, r.name)}
-                      className="px-2 sm:px-3 py-1 rounded-lg text-white text-xs font-semibold transition hover:opacity-90 whitespace-nowrap"
-                      style={{ backgroundColor: "#e11d48" }}
-                      title="Download PDF"
+
+                  <div className="mt-12 flex gap-5 relative z-10">
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); handleDownloadPDF(identifier, trainer.name); }}
+                      className="flex-1 py-7 rounded-[32px] bg-red-50 text-red-500 text-[10px] font-black tracking-[0.3em] transition-all hover:bg-red-500 hover:text-white shadow-xl shadow-red-50 hover:shadow-none uppercase"
                     >
-                      <span className="hidden sm:inline">Download PDF</span>
-                      <span className="sm:hidden">PDF</span>
+                      Download CV
                     </button>
-                  )}
-                  <div
-                    className="px-2 sm:px-3 py-1 rounded text-xs sm:text-sm font-semibold text-center text-white"
-                    style={{ backgroundColor: "#6953a3" }}
-                    title={`Match score: ${(r.score || r.match_score || r.match_percentage !== undefined ? (r.match_percentage / 100) : 0).toFixed(3)}`}
-                  >
-                    {r.match_percentage !== undefined 
-                      ? `${r.match_percentage}% Match`
-                      : `${Math.round((r.score || r.match_score || 0) * 100)}% Match`}
+                    
+                    <div className={`w-20 h-20 rounded-[32px] border-4 flex items-center justify-center transition-all ${
+                      isSelected ? 'bg-[#6953a3] border-[#6953a3] text-white shadow-2xl scale-110' : 'border-gray-50 text-gray-100 group-hover:border-purple-200 group-hover:text-purple-200'
+                    }`}>
+                      <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        ) : null;
-          })()}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-

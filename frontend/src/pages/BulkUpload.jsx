@@ -364,329 +364,231 @@ export default function BulkUpload({ token }) {
   };
 
   return (
-    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl shadow-md max-w-4xl mx-auto border border-gray-100">
-      <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#6953a3" }}>
-          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-xl sm:text-2xl font-semibold" style={{ color: "#6953a3" }}>
-            Bulk Upload Resumes
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-500">Upload multiple resume files at once</p>
-        </div>
-      </div>
+    <div className="max-w-7xl mx-auto mt-12 px-4 pb-12">
+      <div className="bg-white rounded-[40px] shadow-[0_20px_60px_-15px_rgba(105,83,163,0.15)] overflow-hidden border border-purple-50">
+        {/* Thicker Decorative Header */}
+        <div className="h-3 bg-gradient-to-r from-[#6953a3] via-purple-400 to-[#F4E403]"></div>
 
-      {}
-      <div className="mb-6">
-        <label className="block text-sm font-semibold mb-3 text-gray-700">Select Resume Files (PDF/DOC/Images)</label>
-        <div className="relative">
-          <div className="border-2 border-dashed rounded-xl p-4 sm:p-6 md:p-8 text-center transition-colors hover:border-purple-400"
-               style={{ borderColor: files.length > 0 ? "#6953a3" : "#d1d5db" }}>
-            <input
-              type="file"
-              multiple
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-              onChange={(e) => {
-                const selectedFiles = Array.from(e.target.files);
-                if (selectedFiles.length > 0) {
-                  setFiles(selectedFiles);
-                  setFilesRestored(false); // New files selected, clear the restored flag
-                }
-              }}
-              disabled={uploading}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              id="file-upload"
-            />
-            <div className="pointer-events-none">
-              <svg className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto mb-2 sm:mb-3" style={{ color: "#6953a3" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        <div className="p-10 sm:p-10">
+          <div className="text-center mb-14">
+            <div className="w-24 h-24 bg-purple-50 rounded-[32px] flex items-center justify-center mx-auto mb-8 text-[#6953a3] shadow-inner transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+              <svg
+                className="w-12 h-12"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                />
               </svg>
-              <p className="text-sm sm:text-base text-gray-600 font-medium mb-1">
-                {files.length > 0 ? `${files.length} file(s) ${filesRestored ? '(previously selected - select again to re-upload)' : 'selected'}` : "Click to select files or drag and drop"}
-              </p>
-              <p className="text-xs text-gray-500">PDF, DOC, DOCX, JPG, PNG, or JPEG files (images use OCR)</p>
-              {filesRestored && !uploading && (
-                <p className="text-xs text-yellow-600 mt-2 font-medium">
-                  ⚠️ File selection was restored from previous session. Please re-select files if you want to upload new ones.
-                </p>
+            </div>
+            <h2 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">
+              Bulk Upload Resumes
+            </h2>
+            <p className="text-xl text-gray-500 max-w-lg mx-auto">
+              Let our AI extract your profile details automatically.
+            </p>
+          </div>
+
+          <div className="space-y-8">
+            {/* Custom Input Section */}
+            <div className="relative group">
+              <div
+                className={`border-4 border-dashed rounded-[32px] p-10 sm:p-16 text-center transition-all duration-300 ${
+                  files.length > 0 ? "border-[#6953a3] bg-purple-50/30" : "border-gray-100 bg-gray-50 hover:border-purple-200"
+                }`}
+              >
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  onChange={(e) => {
+                    const selectedFiles = Array.from(e.target.files);
+                    if (selectedFiles.length > 0) {
+                      setFiles(selectedFiles);
+                      setFilesRestored(false);
+                    }
+                  }}
+                  disabled={uploading}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  id="file-upload"
+                />
+                <div className="pointer-events-none">
+                  <svg className="w-16 h-16 mx-auto mb-4 text-[#6953a3] opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <p className="text-2xl font-bold text-gray-800 mb-2">
+                    {files.length > 0 ? `${files.length} file(s) selected` : "Click or drag to upload resumes"}
+                  </p>
+                  <p className="text-gray-500 font-medium">PDF, DOC, DOCX, JPG, PNG, or JPEG (OCR enabled)</p>
+                  {filesRestored && !uploading && (
+                    <p className="text-sm text-yellow-600 mt-4 font-bold bg-yellow-50 py-2 px-4 rounded-full inline-block border border-yellow-100">
+                      ⚠️ Session restored. Re-select files to perform a new upload.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Selected Files Grid */}
+            {files.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-64 overflow-y-auto p-2">
+                {files.map((file, index) => (
+                  <div key={index} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-all shadow-sm group/item">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-purple-100 text-[#6953a3]">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-gray-800 truncate">{file.name || 'Unknown file'}</p>
+                      <p className="text-xs text-gray-400 font-medium">{file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'N/A'}</p>
+                    </div>
+                    {!uploading && (
+                      <button 
+                        onClick={() => setFiles(files.filter((_, i) => i !== index))}
+                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={handleUpload}
+                disabled={uploading || files.length === 0 || files.filter(f => f instanceof File).length === 0}
+                className="flex-[2] py-5 rounded-[24px] text-white text-xl font-bold transition-all transform hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 disabled:grayscale shadow-xl shadow-purple-200 flex items-center justify-center gap-3"
+                style={{ backgroundColor: "#6953a3" }}
+              >
+                {uploading ? (
+                  <>
+                    <svg className="animate-spin h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>
+                    Start Bulk Upload ({files.filter(f => f instanceof File).length || files.length})
+                  </>
+                )}
+              </button>
+
+              {(uploading || progress) && (
+                <button
+                  onClick={uploading ? handleCancel : handleClear}
+                  className={`flex-1 py-5 rounded-[24px] text-xl font-bold transition-all border-2 transform hover:scale-[1.01] ${
+                    uploading ? 'border-red-100 text-red-500 hover:bg-red-50' : 'border-gray-100 text-gray-500 hover:bg-gray-50'
+                  }`}
+                >
+                  {uploading ? "Cancel" : "New Upload"}
+                </button>
               )}
             </div>
-          </div>
-        </div>
 
-        {}
-        {files.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="text-sm font-semibold text-gray-700">Selected Files:</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto">
-              {files.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
-                >
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#6953a3" }}>
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 truncate">{file.name || (file instanceof File ? file.name : 'Unknown file')}</p>
-                    <p className="text-xs text-gray-500">
-                      {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Size unknown'}
-                      {!(file instanceof File) && ' (restored from previous session)'}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newFiles = files.filter((_, i) => i !== index);
-                      setFiles(newFiles);
-                      const fileInput = document.getElementById('file-upload');
-                      if (fileInput) fileInput.value = '';
-                    }}
-                    className="p-1 rounded hover:bg-red-100 transition"
-                    disabled={uploading}
-                    title="Remove file"
-                  >
-                    <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+            {/* Error UI */}
+            {error && (
+              <div className="p-6 bg-red-50 border-2 border-red-100 text-red-700 rounded-[24px] flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
+                <svg className="w-8 h-8 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                <div>
+                  <p className="font-black text-lg">Upload Issue</p>
+                  <p className="font-medium">{error}</p>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-        <button
-          onClick={handleUpload}
-          disabled={uploading || files.length === 0 || files.filter(f => f instanceof File).length === 0}
-          className="flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-white font-semibold transition hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center gap-2 text-sm sm:text-base"
-          style={{ backgroundColor: "#6953a3" }}
-        >
-          {uploading ? (
-            <>
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Uploading...
-            </>
-          ) : (
-            <>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              Start Upload ({files.filter(f => f instanceof File).length || files.length} {(files.filter(f => f instanceof File).length || files.length) === 1 ? 'file' : 'files'})
-            </>
-          )}
-        </button>
-        
-        {uploading && taskId && (progress?.state === "PENDING" || progress?.state === "PROGRESS") && (
-          <button
-            onClick={handleCancel}
-            className="px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-white font-semibold transition hover:opacity-90 shadow-md flex items-center justify-center gap-2 text-sm sm:text-base bg-red-600 hover:bg-red-700"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Cancel Upload
-          </button>
-        )}
-        
-        {(progress && (progress.state === "SUCCESS" || progress.state === "FAILURE" || progress.state === "ERROR" || progress.state === "PENDING_TIMEOUT" || progress.state === "REVOKED")) && (
-          <button
-            onClick={handleClear}
-            className="md:hidden px-6 py-3 rounded-lg text-gray-700 font-semibold transition hover:bg-gray-100 border-2 border-gray-300 shadow-md flex items-center justify-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Start New Upload
-          </button>
-        )}
-      </div>
-
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-r-lg shadow-sm">
-          <div className="flex items-start">
-            <svg className="w-5 h-5 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <div>
-              <p className="font-semibold mb-1">Error</p>
-              <p className="text-sm">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {progress && (
-        <div className="mt-4 sm:mt-6 p-3 sm:p-4 md:p-5 border rounded-xl bg-gradient-to-br from-gray-50 to-white shadow-sm">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: "#6953a3" }}>
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <h3 className="text-base sm:text-lg font-semibold" style={{ color: "#6953a3" }}>
-              Upload Progress
-            </h3>
-          </div>
-          
-          {progress.state === "PROGRESS" && progress.info && (
-            <div className="mb-3 sm:mb-4">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 sm:gap-2 text-xs sm:text-sm mb-2">
-                <span className="font-medium text-gray-700 break-words">{progress.info.status || "Processing files..."}</span>
-                <span className="font-semibold whitespace-nowrap" style={{ color: "#6953a3" }}>
-                  {progress.info.current || 0} / {progress.info.total || 0}
-                </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mb-2 overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{ 
-                    backgroundColor: "#6953a3",
-                    width: `${getProgressPercentage()}%` 
-                  }}
-                ></div>
-              </div>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 sm:gap-2 text-xs text-gray-600">
-                <span>{getProgressPercentage()}% complete</span>
-                {progress.info.step && (
-                  <span className="px-2 py-1 bg-gray-200 rounded-full text-xs">{progress.info.step}</span>
+            )}
+
+            {/* Detailed Original Progress UI */}
+            {progress && (
+              <div className="mt-8 p-8 bg-gray-50/50 rounded-[32px] border border-gray-100 space-y-6 animate-in fade-in zoom-in-95">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="text-xs font-black text-purple-400 uppercase tracking-widest">Process Tracking</span>
+                    <h3 className="text-2xl font-black text-gray-900">{progress.state === "PENDING_TIMEOUT" ? "UNKNOWN" : progress.state}</h3>
+                  </div>
+                  {progress.state === "PROGRESS" && (
+                    <div className="text-right">
+                      <span className="text-3xl font-black text-[#6953a3]">{getProgressPercentage()}%</span>
+                      <p className="text-xs text-gray-400 font-bold tracking-tighter">{progress.info?.current} / {progress.info?.total} files</p>
+                    </div>
+                  )}
+                </div>
+
+                {progress.state === "PROGRESS" && (
+                  <div className="space-y-3">
+                    <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#6953a3] to-purple-400 transition-all duration-500 rounded-full" 
+                        style={{ width: `${getProgressPercentage()}%` }} 
+                      />
+                    </div>
+                    <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-tight">
+                      <span>{progress.info?.status || "Analyzing content..."}</span>
+                      <span>{progress.info?.step}</span>
+                    </div>
+                  </div>
                 )}
-              </div>
-            </div>
-          )}
 
-          <div className="space-y-2 sm:space-y-3">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-              <span className="text-xs sm:text-sm font-semibold text-gray-700">Status:</span>
-              <span className={`text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full ${
-                progress.state === "SUCCESS" ? "bg-green-100 text-green-800" :
-                progress.state === "FAILURE" || progress.state === "ERROR" ? "bg-red-100 text-red-800" :
-                progress.state === "PROGRESS" ? "bg-blue-100 text-blue-800" :
-                progress.state === "PENDING_TIMEOUT" ? "bg-yellow-100 text-yellow-800" :
-                progress.state === "REVOKED" ? "bg-orange-100 text-orange-800" :
-                "bg-gray-100 text-gray-800"
-              }`}>
-                {progress.state === "PENDING_TIMEOUT" ? "UNKNOWN" : progress.state}
-              </span>
-            </div>
-            
-            {progress.state === "SUCCESS" && progress.result && (
-              <div className="p-3 sm:p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
-                <div className="flex items-start">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 mt-0.5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-green-800 mb-1 text-sm sm:text-base">Upload Successful!</p>
-                    <p className="text-xs sm:text-sm text-green-700">
-                      {progress.result.imported !== null && progress.result.total !== null ? (
-                        <>Successfully imported <strong>{progress.result.imported || 0}</strong> out of{" "}
-                        <strong>{progress.result.total || 0}</strong> resumes</>
-                      ) : progress.result.status ? (
-                        progress.result.status
+                {/* Original Results Rendering Blocks */}
+                {progress.state === "SUCCESS" && progress.result && (
+                  <div className="p-6 bg-green-50 rounded-[24px] border-2 border-green-100 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-green-500 text-white p-2 rounded-full">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                      </div>
+                      <p className="font-black text-green-900 text-lg">Batch Complete!</p>
+                    </div>
+                    <p className="text-green-800 font-medium">
+                      {progress.result.imported !== null ? (
+                        <>Successfully imported <strong>{progress.result.imported}</strong> of <strong>{progress.result.total}</strong> resumes.</>
                       ) : (
-                        <>Upload processing completed successfully. Your profiles have been uploaded. Check the trainer list to verify.</>
+                        progress.result.status || "Upload processing completed successfully."
                       )}
                     </p>
+                    
                     {progress.result.failed_files && progress.result.failed_files.length > 0 && (
-                      <div className="mt-2 sm:mt-3 p-2 sm:p-3 md:p-4 bg-red-50 border-2 border-red-300 rounded-lg">
-                        <div className="flex items-start gap-2 mb-2">
-                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                          <p className="text-xs sm:text-sm font-bold text-red-800">
-                            ⚠️ {progress.result.failed_files.length} file(s) could not be processed:
-                          </p>
-                        </div>
-                        <ul className="list-disc list-inside text-xs sm:text-sm text-red-700 space-y-1 ml-4 sm:ml-7 max-h-32 sm:max-h-48 overflow-y-auto">
+                      <div className="mt-4 p-4 bg-white/60 rounded-xl border border-red-100">
+                        <p className="text-red-700 font-bold text-sm mb-2 flex items-center gap-2">
+                          <span>⚠️ {progress.result.failed_files.length} issues detected:</span>
+                        </p>
+                        <ul className="text-xs text-red-600 font-medium list-disc list-inside space-y-1">
                           {progress.result.failed_files.map((filename, idx) => (
-                            <li key={idx} className="font-medium break-words">{filename}</li>
+                            <li key={idx} className="truncate">{filename}</li>
                           ))}
                         </ul>
                       </div>
                     )}
-                    {progress.result.details && (
-                      <details className="mt-2 sm:mt-3">
-                        <summary className="cursor-pointer text-xs sm:text-sm font-medium text-green-700 hover:text-green-800">
-                          View full details
-                        </summary>
-                        <pre className="mt-2 text-xs bg-white p-2 sm:p-3 rounded-lg overflow-auto max-h-32 sm:max-h-40 border border-green-200">
-                          {JSON.stringify(progress.result.details, null, 2)}
-                        </pre>
-                      </details>
-                    )}
                   </div>
-                </div>
-              </div>
-            )}
+                )}
 
-            {progress.state === "FAILURE" && (
-              <div className="p-3 sm:p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
-                <div className="flex items-start">
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3 mt-0.5 text-red-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-red-800 mb-1 text-sm sm:text-base">Upload Failed</p>
-                    <p className="text-xs sm:text-sm text-red-700 break-words">{progress.info || "Unknown error"}</p>
+                {/* Additional Original Logic States */}
+                {progress.state === "FAILURE" && (
+                  <div className="p-6 bg-red-50 rounded-[24px] border border-red-100 font-bold text-red-800">
+                    {progress.info || "A critical error occurred during extraction."}
                   </div>
-                </div>
-              </div>
-            )}
-
-            {progress.state === "PENDING" && (
-              <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-blue-50 rounded-lg">
-                <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <p className="text-xs sm:text-sm text-blue-700">⏳ Waiting for processing to start...</p>
-              </div>
-            )}
-            
-            {progress.state === "PENDING_TIMEOUT" && (
-              <div className="p-3 sm:p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-r-lg">
-                <div className="flex items-start">
-                  <svg className="w-4 h-4 sm:w-5 sm:w-5 mr-2 sm:mr-3 mt-0.5 text-yellow-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-yellow-800 mb-1 text-sm sm:text-base">Status Check Unavailable</p>
-                    <p className="text-xs sm:text-sm text-yellow-700">
-                      {progress.info && progress.info.status ? progress.info.status : "Upload processing may have completed. Please check the trainer list to verify your uploads were successful."}
-                    </p>
+                )}
+                {progress.state === "PENDING" && (
+                  <div className="flex items-center justify-center gap-3 py-4">
+                    <div className="flex gap-1">
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+                    </div>
+                    <p className="text-[#6953a3] font-bold">Waiting for processing to start...</p>
                   </div>
-                </div>
-              </div>
-            )}
-
-            {progress.state === "REVOKED" && (
-              <div className="p-3 sm:p-4 bg-orange-50 border-l-4 border-orange-500 rounded-r-lg">
-                <div className="flex items-start">
-                  <svg className="w-4 h-4 sm:w-5 sm:w-5 mr-2 sm:mr-3 mt-0.5 text-orange-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-orange-800 mb-1 text-sm sm:text-base">Upload Cancelled</p>
-                    <p className="text-xs sm:text-sm text-orange-700">
-                      {progress.info && progress.info.status ? progress.info.status : "The upload has been cancelled. Files that were already being processed may have completed, but remaining files were not processed."}
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

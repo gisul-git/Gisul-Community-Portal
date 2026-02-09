@@ -67,6 +67,31 @@ export async function trainerLogin(email, password) {
   return res.json();
 }
 
+// Add this to your api.js file
+export async function addAdmin(token, adminData) {
+  const response = await fetch(`${API_BASE}/admin/add_admin`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+    body: JSON.stringify(adminData),
+  });
+  return await response.json();
+}
+
+// Fetch admin dashboard stats (and get current admin email)
+export async function getAdminDashboard(token) {
+  const response = await fetch(`${API_BASE}/admin/dashboard`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
+    },
+  });
+  return await response.json();
+}
+
 export async function startBulkUpload(token, files) {
   const fd = new FormData();
   for (const f of files) fd.append("files", f);

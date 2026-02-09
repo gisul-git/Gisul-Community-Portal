@@ -44,7 +44,7 @@ from typing import List, Dict, Any, AsyncGenerator, Optional, Tuple
 import asyncio
 import json
 from core.db import trainer_profiles, admin_users, activity_logs, customer_users, customer_requirements
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from models.models import ActivityLogRequest, ActivityLogsFilter, TrainerProfileUpdate, CustomerRequirementPost, RequirementApproval
 import re
 import hashlib
@@ -1095,6 +1095,58 @@ class TextSearchRequest(BaseModel):
     location: str = ""
     top_k: int = 10
     skill_domain: Optional[str] = None
+
+# Add this class to your models
+class AdminSignup(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+
+# Add this endpoint to main.py
+@app.post("/admin/add_admin")
+async def add_new_admin(admin_data: AdminSignup, user=Depends(get_admin_user)):
+    """
+    Super Admin endpoint to create new admins.
+    """
+    # 1. Security Check: Ensure the requester is a Super Admin
+    # You can move this list to .env
+    SUPER_ADMINS = ["team@gisul.co.in", "shaveta.goyal@gisul.co.in", "sahil.goyal@gisul.co.in"] 
+    
+    if user["email"] not in SUPER_ADMINS:
+        raise HTTPException(status_code=403, detail="Only Super Admins can add new admins.")
+
+    # 2. Check if email already exists
+    existing_admin = await admin_users.find_one({"email": admin_data.email})
+    if existing_admin:
+        raise HTTPException(status_code=400, detail="Admin with this email already exists")
+
+    # 3. Hash Password
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed_password = pwd_context.hash(admin_data.password)
+
+    # 4. Create Admin Document
+    new_admin = {
+        "name": admin_data.name,
+        "email": admin_data.email,
+        "password": hashed_password, 
+        "role": "admin",
+        "created_by": user["email"],
+        "created_at": datetime.utcnow(),
+        "email_verified": True
+    }
+
+    await admin_users.insert_one(new_admin)
+
+    # 5. Log Activity
+    asyncio.create_task(log_activity(
+        action_type="create_admin",
+        user_email=user["email"],
+        user_role="admin",
+        details={"new_admin_email": admin_data.email}
+    ))
+
+    return {"status": "success", "message": f"Admin {admin_data.email} created successfully"}    
 
 @app.post("/admin/upload_jd")
 async def upload_jd(file: UploadFile = File(...), user=Depends(get_admin_user)):
@@ -2206,7 +2258,8 @@ async def get_all_trainers(user=Depends(get_admin_user)):
                             {"$ifNull": ["$updated_at", "$uploaded_at"]},
                             datetime(1970, 1, 1)
                         ]
-                    }
+                    },
+                    "is_available": 1
                 }
             },
             {
@@ -2252,7 +2305,8 @@ async def get_all_trainers(user=Depends(get_admin_user)):
                 "profile_id": trainer.get("profile_id", ""),  # Include profile_id for deletion support
                 "skills": skills,  # Include normalized skills for editing
                 "experience_years": trainer.get("experience_years"),
-                "skill_domains": skill_domains
+                "skill_domains": skill_domains,
+                "is_available": trainer.get("is_available", False)
             })
         
         logging.info(f"✅ Returning {len(trainers_list)} trainers (sorted by updated_at/uploaded_at descending)")
@@ -2506,7 +2560,11 @@ async def update_trainer_by_admin(identifier: str, update_data: TrainerProfileUp
             update_doc["companies"] = [c.strip() for c in update_data.companies if c.strip()] if update_data.companies else []
         if update_data.clients is not None:
             update_doc["clients"] = [c.strip() for c in update_data.clients if c.strip()] if update_data.clients else []
-        
+        if update_data.is_available is not None:
+            update_doc["is_available"] = update_data.is_available
+
+
+
         # Update skill domains if skills were updated
         if "skills" in update_doc:
             from services.skill_domains import infer_skill_domains
@@ -2667,7 +2725,8 @@ async def get_trainer_profile(user=Depends(get_trainer_user)):
             "current_company": profile.get("current_company", ""),
             "companies": profile.get("companies", []),
             "clients": profile.get("clients", []),
-            "location": profile.get("location", "")
+            "location": profile.get("location", ""),
+            "is_available": profile.get("is_available", False)
         }
     else:
         return {
@@ -2720,7 +2779,11 @@ async def update_trainer_profile(update_data: TrainerProfileUpdate, http_request
             update_doc["companies"] = [c.strip() for c in update_data.companies if c.strip()] if update_data.companies else []
         if update_data.clients is not None:
             update_doc["clients"] = [c.strip() for c in update_data.clients if c.strip()] if update_data.clients else []
-        
+        if update_data.is_available is not None:
+            update_doc["is_available"] = update_data.is_available
+
+
+
         # Update skill domains if skills were updated
         if "skills" in update_doc:
             from services.skill_domains import infer_skill_domains

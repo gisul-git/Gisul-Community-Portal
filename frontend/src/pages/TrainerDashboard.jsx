@@ -69,6 +69,8 @@ export default function TrainerDashboard({ token, onLogout }) {
   });
   const [updating, setUpdating] = useState(false);
 
+  const [isAvailable, setIsAvailable] = useState(false);
+
   // --- EFFECT: Auto-hide notifications after 5 seconds ---
   useEffect(() => {
     if (success || error) {
@@ -117,12 +119,37 @@ export default function TrainerDashboard({ token, onLogout }) {
           skills: prof.skills || [],
           certifications: prof.certifications || [],
         });
+        setIsAvailable(prof.is_available || false);
       }
     } catch (err) {
       console.error("Failed to load profile", err);
       setError("Failed to load profile. Please refresh the page.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function toggleAvailability() {
+    const newStatus = !isAvailable;
+    setIsAvailable(newStatus); // Optimistic update (instant UI change)
+
+    try {
+      // Assuming your update API accepts 'is_available'
+      const res = await updateTrainerProfile(token, {
+        is_available: newStatus,
+      });
+      if (res.status === "success") {
+        setSuccess(
+          newStatus
+            ? "✅ You are now marked as Available"
+            : "💤 You are now marked as Busy",
+        );
+      } else {
+        throw new Error("Update failed");
+      }
+    } catch (err) {
+      setIsAvailable(!newStatus); // Revert if API fails
+      setError("Failed to update availability status");
     }
   }
 
@@ -303,7 +330,7 @@ export default function TrainerDashboard({ token, onLogout }) {
     }
   };
 
-async function handleUpload(e) {
+  async function handleUpload(e) {
     e.preventDefault();
     if (!file) return setError("Please select a file");
 
@@ -321,25 +348,32 @@ async function handleUpload(e) {
         const cleanList = (list, limit = 30) => {
           if (!Array.isArray(list)) return [];
           return list
-            .filter((item) => item && typeof item === "string" && item.trim().length > 0 && item.length < 50)
+            .filter(
+              (item) =>
+                item &&
+                typeof item === "string" &&
+                item.trim().length > 0 &&
+                item.length < 50,
+            )
             .slice(0, limit);
         };
 
         // 2. Helper to safely get numbers (accepts 0, rejects undefined/null)
-        const getVal = (val, fallback = "") => (val !== undefined && val !== null ? val : fallback);
+        const getVal = (val, fallback = "") =>
+          val !== undefined && val !== null ? val : fallback;
 
         // 3. Smart Commercial Range Parsing
         // If backend sends "min_commercial", use it. Otherwise, try to parse "commercial_range" string.
         let minComm = extracted.min_commercial || "";
         let maxComm = extracted.max_commercial || "";
-        
+
         if ((!minComm || !maxComm) && extracted.commercial_range) {
-           // Regex to find numbers in strings like "₹5000 - ₹10000" or "5000-10000"
-           const numbers = extracted.commercial_range.toString().match(/(\d+)/g);
-           if (numbers && numbers.length > 0) {
-              minComm = numbers[0];
-              if (numbers.length > 1) maxComm = numbers[numbers.length - 1]; // Take the last number as max
-           }
+          // Regex to find numbers in strings like "₹5000 - ₹10000" or "5000-10000"
+          const numbers = extracted.commercial_range.toString().match(/(\d+)/g);
+          if (numbers && numbers.length > 0) {
+            minComm = numbers[0];
+            if (numbers.length > 1) maxComm = numbers[numbers.length - 1]; // Take the last number as max
+          }
         }
 
         // 4. Update State
@@ -347,15 +381,15 @@ async function handleUpload(e) {
           // Use form inputs as fallback if extraction misses name/email
           name: extracted.name || name.trim(),
           email: extracted.email || email.trim(),
-          
+
           phone: getVal(extracted.phone),
           location: getVal(extracted.location),
           age: getVal(extracted.age),
           experience_years: getVal(extracted.experience_years), // Now accepts 0 correctly
-          
+
           min_commercial: minComm,
           max_commercial: maxComm,
-          
+
           current_company: getVal(extracted.current_company),
 
           companies: cleanList(extracted.companies, 10),
@@ -407,60 +441,69 @@ async function handleUpload(e) {
   return (
     <div className="min-h-screen bg-[#f8f9fc] font-sans selection:bg-purple-100 pb-20">
       {/* --- MAXIMIZED FLOATING NAVBAR (Trainer) --- */}
-<div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6 sm:pt-10">
-  <header className="flex items-center justify-between w-full max-w-7xl bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
-    
-    {/* Left: Brand Identity */}
-    <div className="flex items-center gap-4 sm:gap-5 pl-1">
-      <img 
-        src={gisulLogo} 
-        alt="GISUL" 
-        // CHANGED: Increased size to h-16 (mobile) / h-20 (desktop) for better visibility
-        className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105" 
-      />
-      <div className="hidden sm:flex flex-col justify-center">
-        <span className="font-extrabold text-gray-900 text-xl sm:text-2xl leading-none tracking-tight">
-          GISUL
-        </span>
-        <span className="text-[10px] sm:text-[12px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">
-          Trainer Portal
-        </span>
-      </div>
-    </div>
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6 sm:pt-10">
+        <header className="flex items-center justify-between w-full max-w-7xl bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
+          {/* Left: Brand Identity */}
+          <div className="flex items-center gap-4 sm:gap-5 pl-1">
+            <img
+              src={gisulLogo}
+              alt="GISUL"
+              // CHANGED: Increased size to h-16 (mobile) / h-20 (desktop) for better visibility
+              className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105"
+            />
+            <div className="hidden sm:flex flex-col justify-center">
+              <span className="font-extrabold text-gray-900 text-xl sm:text-2xl leading-none tracking-tight">
+                GISUL
+              </span>
+              <span className="text-[10px] sm:text-[12px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">
+                Trainer Portal
+              </span>
+            </div>
+          </div>
 
-    {/* Right: Actions */}
-    <div className="flex items-center gap-4 pr-1">
-      {profile && profile.email && (
-        <button
-          onClick={() => {
-              setShowProfile(!showProfile);
-              setIsReviewing(false);
-          }}
-          className={`hidden sm:flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-full font-bold text-sm sm:text-base transition-all duration-300 transform active:scale-95 ${
-            showProfile 
-              ? "bg-gray-100 text-gray-900 hover:bg-gray-200" 
-              : "bg-[#6953a3] text-white hover:bg-[#58448c] shadow-xl shadow-purple-200"
-          }`}
-        >
-          {showProfile ? "Upload Resume" : "View Dashboard"}
-        </button>
-      )}
-      
-      <button
-        onClick={onLogout}
-        className="group flex items-center gap-3 px-3 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-[#F4E403] text-black font-extrabold text-sm sm:text-base hover:brightness-105 transition-all shadow-lg shadow-yellow-100 transform active:scale-95"
-        title="Logout"
-      >
-        <span className="hidden sm:block">Logout</span>
-        <div className="bg-black/10 rounded-full p-1.5 group-hover:bg-black/20 transition-colors">
-          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </div>
-      </button>
-    </div>
-  </header>
-</div>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-4 pr-1">
+            {profile && profile.email && (
+              <button
+                onClick={() => {
+                  setShowProfile(!showProfile);
+                  setIsReviewing(false);
+                }}
+                className={`hidden sm:flex items-center gap-2 px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-full font-bold text-sm sm:text-base transition-all duration-300 transform active:scale-95 ${
+                  showProfile
+                    ? "bg-gray-100 text-gray-900 hover:bg-gray-200"
+                    : "bg-[#6953a3] text-white hover:bg-[#58448c] shadow-xl shadow-purple-200"
+                }`}
+              >
+                {showProfile ? "Upload Resume" : "View Dashboard"}
+              </button>
+            )}
+
+            <button
+              onClick={onLogout}
+              className="group flex items-center gap-3 px-3 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-[#F4E403] text-black font-extrabold text-sm sm:text-base hover:brightness-105 transition-all shadow-lg shadow-yellow-100 transform active:scale-95"
+              title="Logout"
+            >
+              <span className="hidden sm:block">Logout</span>
+              <div className="bg-black/10 rounded-full p-1.5 group-hover:bg-black/20 transition-colors">
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+              </div>
+            </button>
+          </div>
+        </header>
+      </div>
       {/* --- Main Content (MAXIMIZED) --- */}
       <main className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8 pt-40">
         {/* Loading State */}
@@ -603,6 +646,42 @@ async function handleUpload(e) {
                         ? "Trainer"
                         : profile.current_company || "Professional Trainer"}
                     </p>
+
+                    {/* --- Availability Toggle Button --- */}
+                    <div className="flex flex-col items-center mt-6 mb-8 w-full">
+                      <div
+                        onClick={toggleAvailability}
+                        className={`relative w-full max-w-[200px] cursor-pointer p-1.5 rounded-full border-2 transition-all duration-300 flex items-center ${
+                          isAvailable
+                            ? "border-green-100 bg-green-50"
+                            : "border-gray-100 bg-gray-50"
+                        }`}
+                      >
+                        {/* The Toggle Switch */}
+                        <div
+                          className={`w-12 h-6 rounded-full relative transition-colors duration-300 ${
+                            isAvailable ? "bg-green-500" : "bg-gray-300"
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full shadow-sm transition-transform duration-300 ${
+                              isAvailable ? "translate-x-6" : "translate-x-0"
+                            }`}
+                          ></div>
+                        </div>
+
+                        {/* The Label Text */}
+                        <span
+                          className={`ml-3 text-sm font-bold select-none ${
+                            isAvailable ? "text-green-700" : "text-gray-400"
+                          }`}
+                        >
+                          {isAvailable
+                            ? "Available for Work"
+                            : "Currently Busy"}
+                        </span>
+                      </div>
+                    </div>
 
                     {/* Contact Info Grid */}
                     <div className="w-full space-y-4">
@@ -869,13 +948,37 @@ async function handleUpload(e) {
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={chartData}>
                           <defs>
-                            <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#6953a3" stopOpacity={0.8} />
-                              <stop offset="95%" stopColor="#6953a3" stopOpacity={0} />
+                            <linearGradient
+                              id="colorSessions"
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="5%"
+                                stopColor="#6953a3"
+                                stopOpacity={0.8}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor="#6953a3"
+                                stopOpacity={0}
+                              />
                             </linearGradient>
                           </defs>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: "#9CA3AF", fontSize: 13 }} dy={15} />
+                          <CartesianGrid
+                            strokeDasharray="3 3"
+                            vertical={false}
+                            stroke="#f0f0f0"
+                          />
+                          <XAxis
+                            dataKey="day"
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: "#9CA3AF", fontSize: 13 }}
+                            dy={15}
+                          />
                           <Tooltip
                             contentStyle={{
                               borderRadius: "16px",
@@ -889,7 +992,14 @@ async function handleUpload(e) {
                               strokeDasharray: "5 5",
                             }}
                           />
-                          <Area type="monotone" dataKey="sessions" stroke="#6953a3" strokeWidth={4} fillOpacity={1} fill="url(#colorSessions)" />
+                          <Area
+                            type="monotone"
+                            dataKey="sessions"
+                            stroke="#6953a3"
+                            strokeWidth={4}
+                            fillOpacity={1}
+                            fill="url(#colorSessions)"
+                          />
                         </AreaChart>
                       </ResponsiveContainer>
                     </div>
@@ -918,7 +1028,9 @@ async function handleUpload(e) {
                               >
                                 {skill}
                                 <button
-                                  onClick={() => removeFromListField("skills", idx)}
+                                  onClick={() =>
+                                    removeFromListField("skills", idx)
+                                  }
                                   className="hover:text-red-500 text-lg leading-none"
                                 >
                                   ×
@@ -950,11 +1062,12 @@ async function handleUpload(e) {
                             </span>
                           ))
                         )}
-                        {!isEditing && (!profile.skills || profile.skills.length === 0) && (
-                          <p className="text-sm text-gray-400 italic">
-                            No skills listed
-                          </p>
-                        )}
+                        {!isEditing &&
+                          (!profile.skills || profile.skills.length === 0) && (
+                            <p className="text-sm text-gray-400 italic">
+                              No skills listed
+                            </p>
+                          )}
                       </div>
                     </div>
 
@@ -991,7 +1104,9 @@ async function handleUpload(e) {
                                   certifications: e.target.value,
                                 })
                               }
-                              onKeyDown={(e) => handleAddChip("certifications", e)}
+                              onKeyDown={(e) =>
+                                handleAddChip("certifications", e)
+                              }
                               placeholder="+ Add cert..."
                               className="bg-gray-50 border border-transparent focus:border-yellow-300 rounded-xl px-4 py-2 text-sm font-medium outline-none w-40 transition-all"
                             />
@@ -1036,7 +1151,9 @@ async function handleUpload(e) {
                             >
                               <span>{co}</span>
                               <button
-                                onClick={() => removeFromListField("companies", idx)}
+                                onClick={() =>
+                                  removeFromListField("companies", idx)
+                                }
                                 className="text-red-400 hover:text-red-600"
                               >
                                 <svg
@@ -1100,7 +1217,9 @@ async function handleUpload(e) {
                             >
                               <span>{cl}</span>
                               <button
-                                onClick={() => removeFromListField("clients", idx)}
+                                onClick={() =>
+                                  removeFromListField("clients", idx)
+                                }
                                 className="text-red-400 hover:text-red-600"
                               >
                                 <svg
@@ -1205,7 +1324,8 @@ async function handleUpload(e) {
                   </div>
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">
-                      Commercial Range (Per Day) <span className="text-red-500">*</span>
+                      Commercial Range (Per Day){" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <div className="flex items-center gap-3">
                       <div className="relative flex-1">
@@ -1387,7 +1507,9 @@ async function handleUpload(e) {
                           className="bg-transparent outline-none w-auto min-w-[60px] focus:bg-white px-1 rounded"
                         />
                         <button
-                          onClick={() => removeFromListField("certifications", i)}
+                          onClick={() =>
+                            removeFromListField("certifications", i)
+                          }
                           className="text-yellow-400 hover:text-red-500 font-bold ml-1"
                         >
                           ×
@@ -1399,7 +1521,10 @@ async function handleUpload(e) {
                       placeholder="+ Add certification"
                       onKeyDown={(e) => {
                         if (e.key === "Enter" && e.target.value.trim()) {
-                          addToListField("certifications", e.target.value.trim());
+                          addToListField(
+                            "certifications",
+                            e.target.value.trim(),
+                          );
                           e.target.value = "";
                         }
                       }}
@@ -1428,7 +1553,7 @@ async function handleUpload(e) {
 
         {/* --- MAXIMIZED UPLOAD VIEW (Gateway) --- */}
         {!loading && !showProfile && !isReviewing && (
-          <div className="max-w-7xl mx-auto mt-12 px-4">
+          <div className="max-w-7xl mx-auto mt-12 px-4 pb-12">
             <div className="bg-white rounded-[40px] shadow-[0_20px_60px_-15px_rgba(105,83,163,0.15)] overflow-hidden border border-purple-50">
               {/* Thicker Decorative Header */}
               <div className="h-3 bg-gradient-to-r from-[#6953a3] via-purple-400 to-[#F4E403]"></div>
