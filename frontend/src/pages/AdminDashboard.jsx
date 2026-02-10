@@ -30,7 +30,11 @@ export default function AdminDashboard({ token, onLogout }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isAddAdminOpen, setIsAddAdminOpen] = useState(false);
 
-  const [newAdminData, setNewAdminData] = useState({ name: "", email: "", password: "" });
+  const [newAdminData, setNewAdminData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
 
   // Fetch current admin info on mount
@@ -264,20 +268,36 @@ export default function AdminDashboard({ token, onLogout }) {
 
           {/* Right: Actions */}
           <div className="flex items-center gap-3 pr-1">
-
-          {/* --- NEW: Settings Dropdown (Only for Super Admins) --- */}
+            {/* --- NEW: Settings Dropdown (Only for Super Admins) --- */}
             {SUPER_ADMINS.includes(currentAdminEmail) && (
               <div className="relative">
                 <button
                   onClick={() => setSettingsOpen(!settingsOpen)}
                   className={`p-3 rounded-full transition-all duration-200 ${
-                    settingsOpen ? "bg-gray-100 text-gray-900" : "hover:bg-gray-100 text-gray-500"
+                    settingsOpen
+                      ? "bg-gray-100 text-gray-900"
+                      : "hover:bg-gray-100 text-gray-500"
                   }`}
                   title="Settings"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
                   </svg>
                 </button>
 
@@ -291,8 +311,18 @@ export default function AdminDashboard({ token, onLogout }) {
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 font-medium"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                        />
                       </svg>
                       Add Admin
                     </button>
@@ -482,72 +512,94 @@ export default function AdminDashboard({ token, onLogout }) {
       </main>
 
       {/* --- Add Admin Modal --- */}
-      {isAddAdminOpen && createPortal(
-        <div 
-          className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[99999]"
-          onClick={() => setIsAddAdminOpen(false)}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
+      {isAddAdminOpen &&
+        createPortal(
+          <div
+            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[99999]"
+            onClick={() => setIsAddAdminOpen(false)}
           >
-            <div className="bg-[#6953a3] p-6 text-white">
-              <h2 className="text-xl font-bold">Add New Admin</h2>
-              <p className="text-purple-200 text-sm">Grant admin privileges to a new user</p>
-            </div>
-            
-            <form onSubmit={handleAddAdminSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Name</label>
-                <input 
-                  type="text" 
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                  value={newAdminData.name}
-                  onChange={e => setNewAdminData({...newAdminData, name: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Email</label>
-                <input 
-                  type="email" 
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                  value={newAdminData.email}
-                  onChange={e => setNewAdminData({...newAdminData, email: e.target.value})}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Password</label>
-                <input 
-                  type="password" 
-                  required
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
-                  value={newAdminData.password}
-                  onChange={e => setNewAdminData({...newAdminData, password: e.target.value})}
-                />
+            <div
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-[#6953a3] p-6 text-white">
+                <h2 className="text-xl font-bold">Add New Admin</h2>
+                <p className="text-purple-200 text-sm">
+                  Grant admin privileges to a new user
+                </p>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
-                <button 
-                  type="button"
-                  onClick={() => setIsAddAdminOpen(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
-                >
-                  Cancel
-                </button>
-                <button 
-                  type="submit"
-                  disabled={isAddingAdmin}
-                  className="px-6 py-2 bg-[#6953a3] text-white rounded-lg font-bold hover:bg-[#58448c] disabled:opacity-50"
-                >
-                  {isAddingAdmin ? "Adding..." : "Create Admin"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      , document.body)}
+              <form onSubmit={handleAddAdminSubmit} className="p-6 space-y-4">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                    value={newAdminData.name}
+                    onChange={(e) =>
+                      setNewAdminData({ ...newAdminData, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                    value={newAdminData.email}
+                    onChange={(e) =>
+                      setNewAdminData({
+                        ...newAdminData,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+                    value={newAdminData.password}
+                    onChange={(e) =>
+                      setNewAdminData({
+                        ...newAdminData,
+                        password: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddAdminOpen(false)}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isAddingAdmin}
+                    className="px-6 py-2 bg-[#6953a3] text-white rounded-lg font-bold hover:bg-[#58448c] disabled:opacity-50"
+                  >
+                    {isAddingAdmin ? "Adding..." : "Create Admin"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>,
+          document.body,
+        )}
 
       <style>{`
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
@@ -1028,6 +1080,8 @@ function TrainersList({ token }) {
     phone: "",
     location: "",
     skills: "",
+    min_commercial: "",
+    max_commercial: "",
   });
   const [saving, setSaving] = useState(false);
   const [expandedKeywords, setExpandedKeywords] = useState([]);
@@ -1484,6 +1538,8 @@ function TrainersList({ token }) {
       phone: trainerPhone,
       location: trainerLocation,
       skills: trainerSkills,
+      min_commercial: trainer.min_commercial || "",
+      max_commercial: trainer.max_commercial || "",
     });
   }
 
@@ -1522,6 +1578,12 @@ function TrainersList({ token }) {
         phone: editFormData.phone.trim() || undefined,
         location: editFormData.location.trim() || undefined,
         skills: skillsArray.length > 0 ? skillsArray : undefined,
+        min_commercial: editFormData.min_commercial
+          ? parseFloat(editFormData.min_commercial)
+          : undefined,
+        max_commercial: editFormData.max_commercial
+          ? parseFloat(editFormData.max_commercial)
+          : undefined,
       };
 
       // Remove undefined fields
@@ -2052,6 +2114,9 @@ function TrainersList({ token }) {
                         <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
                           Experience
                         </th>
+                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
+                          Commercial Range
+                        </th>
                         <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">
                           Actions
                         </th>
@@ -2190,6 +2255,15 @@ function TrainersList({ token }) {
                                   <span className="text-gray-400">-</span>
                                 )}
                               </td>
+                              <td className="px-6 py-4 text-center">
+  {(trainer.min_commercial || trainer.max_commercial) ? (
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-green-50 text-green-700 border border-green-100 whitespace-nowrap">
+      ₹{trainer.min_commercial || 0} - ₹{trainer.max_commercial || 0}
+    </span>
+  ) : (
+    <span className="text-gray-400 text-xs italic">N/A</span>
+  )}
+</td>
                               <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
@@ -2483,8 +2557,6 @@ function TrainersList({ token }) {
           </div>,
           document.body,
         )}
-
-        
     </div>
   );
 }
