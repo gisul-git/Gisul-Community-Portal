@@ -2572,7 +2572,46 @@ function InlineAnalytics({ token }) {
     skill_category: "",
     location: "",
   });
-  const [chartType, setChartType] = useState("bar"); // "bar" or "pie"
+  const [chartType, setChartType] = useState("bar"); 
+  
+  // "bar" or "pie"
+
+  // 👇 1. NEW STATE: Store availability data separately
+  const [availStats, setAvailStats] = useState([]);
+
+  // 👇 2. NEW EFFECT: Fetch availability automatically on load
+  // 👇 UPDATED: Fetch availability automatically based on CURRENT FILTERS
+  useEffect(() => {
+    const loadAvailability = async () => {
+      try {
+        // 1. Prepare the filters just like we do for the main chart
+        const activeFilters = {};
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== "") {
+             // Convert string boolean to actual boolean for API if needed
+             if (key === "is_available") {
+                activeFilters[key] = value === "true";
+             } else {
+                activeFilters[key] = value;
+             }
+          }
+        });
+
+        // 2. Query specifically for availability, BUT pass the 'filters' object
+        const res = await analyticsQuery(token, { 
+            fields: ["is_available"], // We only want availability data for this widget
+            filters: activeFilters    // <--- THIS IS THE KEY CHANGE
+        });
+
+        if (res && res.data) {
+          setAvailStats(res.data);
+        }
+      } catch (e) {
+        console.error("Failed to load availability stats", e);
+      }
+    };
+    loadAvailability();
+  }, [token, filters]); // <--- 3. Add 'filters' to the dependency array
 
   const availableFields = [
     { id: "skill_category", label: "Skill Category", type: "category" },
@@ -2787,6 +2826,62 @@ function InlineAnalytics({ token }) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
           {/* Left Sidebar - Filters (Takes 2 columns on large screens) */}
           <div className="lg:col-span-3 xl:col-span-2">
+            <div className="bg-white rounded-2xl shadow-lg shadow-purple-900/5 p-4 mb-6 border border-gray-100">
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">
+                Trainer Status
+              </h3>
+              <div className="h-48 w-full relative">
+                {availStats.length > 0 ? (
+                  <Plot
+                    data={[{
+                      values: availStats.map(d => d.count),
+                      labels: availStats.map(d => d._id === true ? "Available" : "Busy"),
+                      type: 'pie',
+                      hole: 0.6, // Makes it a Donut chart
+                      marker: {
+                        colors: availStats.map(d => d._id === true ? '#22c55e' : '#94a3b8') // Green vs Gray
+                      },
+                      textinfo: 'label+percent',
+                      textposition: 'inside',
+                      showlegend: false
+                    }]}
+                    layout={{
+                      margin: { l: 0, r: 0, t: 0, b: 0 },
+                      height: 190,
+                      showlegend: false,
+                      paper_bgcolor: "transparent",
+                    }}
+                    config={{ displayModeBar: false }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-gray-400 text-xs">
+                    Loading stats...
+                  </div>
+                )}
+                
+                {/* Center Text (Total Count) */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+                  <span className="text-2xl font-bold text-gray-800">
+                    {availStats.reduce((a, b) => a + (b.count || 0), 0)}
+                  </span>
+                  <p className="text-[10px] text-gray-400 uppercase font-bold">Total</p>
+                </div>
+              </div>
+
+              {/* Legend / Key */}
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="flex items-center gap-2 bg-green-50 p-2 rounded-lg">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-xs font-bold text-green-700">Available</span>
+                </div>
+                <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
+                  <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                  <span className="text-xs font-bold text-gray-600">Busy</span>
+                </div>
+              </div>
+            </div>
+            {/* 👆 END: NEW AVAILABILITY WIDGET 👆 */}
             <div className="bg-white rounded-2xl shadow-lg shadow-purple-900/5 p-6 sticky top-6 border border-gray-100 h-fit transition-shadow hover:shadow-xl">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
