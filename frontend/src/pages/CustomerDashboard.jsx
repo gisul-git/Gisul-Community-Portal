@@ -80,7 +80,7 @@ export default function CustomerDashboard({ token, onLogout }) {
       
       {/* --- MAXIMIZED FLOATING NAVBAR --- */}
 <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6 sm:pt-10">
-  <header className="flex items-center justify-between w-full max-w-[100rem] bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
+  <header className="flex items-center justify-between w-full max-w-7xl bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
     
     {/* Left: Brand Identity */}
     <div className="flex items-center gap-4 sm:gap-5 pl-1">

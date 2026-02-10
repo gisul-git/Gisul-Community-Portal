@@ -2259,7 +2259,9 @@ async def get_all_trainers(user=Depends(get_admin_user)):
                             datetime(1970, 1, 1)
                         ]
                     },
-                    "is_available": 1
+                    "is_available": 1,
+                    "min_commercial": 1,
+                    "max_commercial": 1
                 }
             },
             {
@@ -2306,7 +2308,9 @@ async def get_all_trainers(user=Depends(get_admin_user)):
                 "skills": skills,  # Include normalized skills for editing
                 "experience_years": trainer.get("experience_years"),
                 "skill_domains": skill_domains,
-                "is_available": trainer.get("is_available", False)
+                "is_available": trainer.get("is_available", False),
+                "min_commercial": trainer.get("min_commercial"),
+                "max_commercial": trainer.get("max_commercial")
             })
         
         logging.info(f"✅ Returning {len(trainers_list)} trainers (sorted by updated_at/uploaded_at descending)")
@@ -2562,6 +2566,10 @@ async def update_trainer_by_admin(identifier: str, update_data: TrainerProfileUp
             update_doc["clients"] = [c.strip() for c in update_data.clients if c.strip()] if update_data.clients else []
         if update_data.is_available is not None:
             update_doc["is_available"] = update_data.is_available
+        if update_data.min_commercial is not None:
+            update_doc["min_commercial"] = update_data.min_commercial
+        if update_data.max_commercial is not None:
+            update_doc["max_commercial"] = update_data.max_commercial    
 
 
 
@@ -2726,7 +2734,9 @@ async def get_trainer_profile(user=Depends(get_trainer_user)):
             "companies": profile.get("companies", []),
             "clients": profile.get("clients", []),
             "location": profile.get("location", ""),
-            "is_available": profile.get("is_available", False)
+            "is_available": profile.get("is_available", False),
+            "min_commercial": profile.get("min_commercial"),
+            "max_commercial": profile.get("max_commercial")
         }
     else:
         return {
@@ -2781,7 +2791,10 @@ async def update_trainer_profile(update_data: TrainerProfileUpdate, http_request
             update_doc["clients"] = [c.strip() for c in update_data.clients if c.strip()] if update_data.clients else []
         if update_data.is_available is not None:
             update_doc["is_available"] = update_data.is_available
-
+        if update_data.min_commercial is not None:
+            update_doc["min_commercial"] = update_data.min_commercial
+        if update_data.max_commercial is not None:
+            update_doc["max_commercial"] = update_data.max_commercial
 
 
         # Update skill domains if skills were updated

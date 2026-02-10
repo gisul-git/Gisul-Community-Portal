@@ -65,6 +65,8 @@ class TrainerProfileUpdate(BaseModel):
     companies: Optional[List[str]] = None
     clients: Optional[List[str]] = None
     is_available: Optional[bool] = None
+    min_commercial: Optional[float] = None
+    max_commercial: Optional[float] = None
 
 class CustomerRequirementPost(BaseModel):
     requirement_text: str

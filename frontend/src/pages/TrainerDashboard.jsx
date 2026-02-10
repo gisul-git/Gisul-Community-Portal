@@ -231,11 +231,11 @@ export default function TrainerDashboard({ token, onLogout }) {
 
         // Send as separate fields OR combined string depending on backend expectation
         // Option A (If backend wants a string):
-        commercial_range: `₹${editData.min_commercial} - ₹${editData.max_commercial}`,
+        //commercial_range: `₹${editData.min_commercial} - ₹${editData.max_commercial}`,
 
         // Option B (If backend has new columns):
-        // min_commercial: parseFloat(editData.min_commercial),
-        // max_commercial: parseFloat(editData.max_commercial),
+        min_commercial: parseFloat(editData.min_commercial),
+        max_commercial: parseFloat(editData.max_commercial),
 
         experience_years: editData.experience_years
           ? parseFloat(editData.experience_years)
@@ -854,6 +854,65 @@ export default function TrainerDashboard({ token, onLogout }) {
                         </p>
                       )}
                     </div>
+                  </div>
+                  <br></br>
+                  {/* --- NEW: Commercial Range Section --- */}
+                  <div>
+                    <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mb-2">
+                      Commercial Range (Per Day)
+                    </p>
+                    {isEditing ? (
+                      <div className="flex items-center gap-3">
+                        {/* Min Input */}
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">
+                            ₹
+                          </span>
+                          <input
+                            type="number"
+                            className="w-full pl-7 pr-3 py-2 font-bold text-lg text-gray-900 border-b border-gray-300 focus:border-[#6953a3] outline-none bg-transparent"
+                            placeholder="Min"
+                            value={editData.min_commercial}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                min_commercial: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <span className="text-gray-400 font-bold">-</span>
+                        {/* Max Input */}
+                        <div className="relative flex-1">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-sm">
+                            ₹
+                          </span>
+                          <input
+                            type="number"
+                            className="w-full pl-7 pr-3 py-2 font-bold text-lg text-gray-900 border-b border-gray-300 focus:border-[#6953a3] outline-none bg-transparent"
+                            placeholder="Max"
+                            value={editData.max_commercial}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                max_commercial: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="font-bold text-xl text-gray-900">
+                        {/* Check profile state directly for View Mode */}
+                        {profile.min_commercial || profile.max_commercial ? (
+                          `₹${profile.min_commercial || 0} - ₹${profile.max_commercial || 0}`
+                        ) : (
+                          <span className="text-gray-400 text-sm italic">
+                            Not set
+                          </span>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
