@@ -1,16 +1,19 @@
 version: "3.9"
 
+# Production docker-compose.yml
+# Uses pre-built images from GitHub Container Registry instead of building locally
+# This file is used by the CI/CD pipeline
+
 services:
   # -----------------------------------------------------------
   # Backend (FastAPI)
   # -----------------------------------------------------------
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    # Image will be set by CI/CD workflow
+    # Format: ghcr.io/OWNER/gisul-community-backend:latest
+    image: ghcr.io/REPLACE_WITH_OWNER/gisul-community-backend:latest
     container_name: gisulmatch-backend
     restart: always
-    # Port not exposed - accessed via reverse proxy at community.gisul.co.in
     expose:
       - "8000"
     env_file:
@@ -29,9 +32,8 @@ services:
   # Celery Worker
   # -----------------------------------------------------------
   worker:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile.celery
+    # Image will be set by CI/CD workflow
+    image: ghcr.io/REPLACE_WITH_OWNER/gisul-community-celery:latest
     container_name: gisulmatch-worker
     restart: always
     depends_on:
@@ -53,14 +55,12 @@ services:
   # Frontend (React + Vite)
   # -----------------------------------------------------------
   frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
+    # Image will be set by CI/CD workflow
+    image: ghcr.io/REPLACE_WITH_OWNER/gisul-community-frontend:latest
     container_name: gisulmatch-frontend
     restart: always
-    # Expose port to host for VM nginx to access
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
     depends_on:
       - backend
     networks:
@@ -73,7 +73,6 @@ services:
     image: redis:7-alpine
     container_name: gisulmatch-redis
     restart: always
-    # Port not exposed - internal service only
     expose:
       - "6379"
     volumes:
@@ -88,7 +87,6 @@ services:
     image: mongo:6
     container_name: gisulmatch-mongo
     restart: always
-    # Port not exposed - internal service only (access via backend if needed)
     expose:
       - "27017"
     volumes:
@@ -120,3 +118,4 @@ volumes:
     driver: local
   faiss_data:
     driver: local
+

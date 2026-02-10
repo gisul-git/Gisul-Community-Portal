@@ -1,0 +1,342 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository_owner }}/gisul-community
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for backend
+        id: meta-backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Extract metadata (tags, labels) for frontend
+        id: meta-frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Extract metadata (tags, labels) for celery worker
+        id: meta-celery
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-celery
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.meta-frontend.outputs.tags }}
+          labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL || 'https://community.gisul.co.in/api' }}
+
+      - name: Build and push celery worker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./backend/Dockerfile.celery
+          push: true
+          tags: ${{ steps.meta-celery.outputs.tags }}
+          labels: ${{ steps.meta-celery.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Output image tags
+        run: |
+          echo "Backend image: ${{ steps.meta-backend.outputs.tags }}"
+          echo "Frontend image: ${{ steps.meta-frontend.outputs.tags }}"
+          echo "Celery image: ${{ steps.meta-celery.outputs.tags }}"
+
+  deploy:
+    name: Deploy to VM
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+
+      - name: Add VM to known hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.VM_HOST || '103.173.99.253' }} >> ~/.ssh/known_hosts
+
+      - name: Generate .env file
+        run: |
+          cat > backend.env << EOF
+          # JWT Configuration
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_ALGO=${{ secrets.JWT_ALGO || 'HS256' }}
+          JWT_EXP_MIN=${{ secrets.JWT_EXP_MIN || '30' }}
+          
+          # MongoDB Configuration (MongoDB Atlas)
+          MONGO_URI=${{ secrets.MONGO_URI }}
+          MONGO_DB_NAME=${{ secrets.MONGO_DB_NAME || 'resume_app' }}
+          
+          # OpenAI Configuration
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          
+          # Redis Configuration
+          REDIS_URL=${{ secrets.REDIS_URL || 'redis://redis:6379/0' }}
+          
+          # Email Configuration (AWS SES)
+          AWS_REGION=${{ secrets.AWS_REGION || 'us-east-1' }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EMAIL_FROM=${{ secrets.EMAIL_FROM }}
+          EMAIL_FROM_NAME=${{ secrets.EMAIL_FROM_NAME || 'Gisul Team' }}
+          
+          # Frontend URL
+          FRONTEND_URL=${{ secrets.FRONTEND_URL || 'https://community.gisul.co.in' }}
+          
+          # OAuth Configuration
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}
+          MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}
+          
+          # CORS Configuration
+          CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS || 'https://community.gisul.co.in' }}
+          CORS_ALLOWED_METHODS=${{ secrets.CORS_ALLOWED_METHODS || 'GET,POST,PUT,DELETE,OPTIONS' }}
+          CORS_ALLOWED_HEADERS=${{ secrets.CORS_ALLOWED_HEADERS || '*' }}
+          CORS_ALLOW_CREDENTIALS=${{ secrets.CORS_ALLOW_CREDENTIALS || 'true' }}
+          
+          # Environment
+          ENVIRONMENT=${{ secrets.ENVIRONMENT || 'production' }}
+          
+          # Security Configuration
+          BCRYPT_ROUNDS=${{ secrets.BCRYPT_ROUNDS || '12' }}
+          MAX_FAILED_ATTEMPTS=${{ secrets.MAX_FAILED_ATTEMPTS || '5' }}
+          LOCKOUT_DURATION_MINUTES=${{ secrets.LOCKOUT_DURATION_MINUTES || '15' }}
+          ADMIN_MAX_ACTIVE=${{ secrets.ADMIN_MAX_ACTIVE || '3' }}
+          
+          # Rate Limiting
+          RATE_LIMIT_REQUESTS=${{ secrets.RATE_LIMIT_REQUESTS || '5' }}
+          RATE_LIMIT_WINDOW=${{ secrets.RATE_LIMIT_WINDOW || '60' }}
+          
+          # Celery Configuration
+          CELERY_PURGE_ON_STARTUP=${{ secrets.CELERY_PURGE_ON_STARTUP || 'false' }}
+          
+          # Embedding Configuration
+          EMBEDDING_MODEL=${{ secrets.EMBEDDING_MODEL || 'text-embedding-3-small' }}
+          USE_OPENAI_EMBEDDINGS=${{ secrets.USE_OPENAI_EMBEDDINGS || 'true' }}
+          
+          # Reranker Configuration
+          RERANKER_MODEL=${{ secrets.RERANKER_MODEL || 'BAAI/bge-reranker-v2-m3' }}
+          USE_RERANKER=${{ secrets.USE_RERANKER || 'true' }}
+          EOF
+
+      - name: Copy files to VM
+        run: |
+          # Create temporary directory structure
+          mkdir -p /tmp/deploy
+          
+          # Copy docker-compose.yml
+          cp docker-compose.yml /tmp/deploy/docker-compose.yml
+          
+          # Copy .env file
+          cp backend.env /tmp/deploy/backend.env
+          
+          # Copy files to VM
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VM_SSH_USER || 'Administrator' }}@${{ secrets.VM_HOST || '103.173.99.253' }} \
+            "mkdir -p /tmp/deploy"
+          
+          scp -o StrictHostKeyChecking=no \
+            /tmp/deploy/backend.env \
+            /tmp/deploy/docker-compose.yml \
+            ${{ secrets.VM_SSH_USER || 'Administrator' }}@${{ secrets.VM_HOST || '103.173.99.253' }}:/tmp/deploy/
+
+      - name: Deploy on VM
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VM_SSH_USER || 'Administrator' }}@${{ secrets.VM_HOST || '103.173.99.253' }} << 'ENDSSH'
+            set -e
+            
+            # Set image names
+            BACKEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest"
+            FRONTEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest"
+            CELERY_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-celery:latest"
+            
+            # Login to GHCR (using GitHub token from secrets)
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+            
+            # Navigate to project directory (try multiple possible paths for Windows VM)
+            PROJECT_DIR="${{ secrets.VM_PROJECT_DIR || '/mnt/c/Users/Administrator/GisulCommunity' }}"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              # Try alternative paths
+              for alt_dir in ~/GisulCommunity /c/Users/Administrator/GisulCommunity C:/Users/Administrator/GisulCommunity; do
+                if [ -d "$alt_dir" ]; then
+                  PROJECT_DIR="$alt_dir"
+                  break
+                fi
+              done
+            fi
+            
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "ERROR: Project directory not found. Please set VM_PROJECT_DIR secret or create the directory."
+              exit 1
+            fi
+            
+            cd "$PROJECT_DIR"
+            echo "Working directory: $(pwd)"
+            
+            # Create backend directory if it doesn't exist
+            mkdir -p backend
+            
+            # Move .env file to backend directory
+            cp /tmp/deploy/backend.env backend/.env
+            echo "✅ .env file created in backend/.env"
+            
+            # Copy docker-compose.yml if using production version
+            if [ -f "/tmp/deploy/docker-compose.yml" ]; then
+              cp /tmp/deploy/docker-compose.yml docker-compose.yml
+            fi
+            
+            # Update docker-compose.yml to use GHCR images
+            # Replace build: sections with image: for production deployment
+            if grep -q "build:" docker-compose.yml; then
+              # Create a temporary file with image references
+              sed -i.bak \
+                -e "s|build:.*dockerfile: backend/Dockerfile|image: $BACKEND_IMAGE|" \
+                -e "s|build:.*dockerfile: backend/Dockerfile.celery|image: $CELERY_IMAGE|" \
+                -e "s|build:.*dockerfile: frontend/Dockerfile|image: $FRONTEND_IMAGE|" \
+                docker-compose.yml
+              echo "✅ Updated docker-compose.yml to use pre-built images"
+            fi
+            
+            # Stop existing containers
+            echo "Stopping existing containers..."
+            docker compose down || true
+            
+            # Pull latest images
+            echo "Pulling latest images..."
+            docker compose pull || {
+              echo "⚠️ Warning: Some images may not exist yet. Continuing..."
+            }
+            
+            # Start services
+            echo "Starting services..."
+            docker compose up -d
+            
+            # Wait for services to be healthy
+            echo "Waiting for services to start..."
+            sleep 15
+            
+            # Health check
+            max_attempts=30
+            attempt=0
+            while [ $attempt -lt $max_attempts ]; do
+              if docker compose ps | grep -q "Up"; then
+                echo "✅ Services are running"
+                break
+              fi
+              attempt=$((attempt + 1))
+              echo "Waiting for services... ($attempt/$max_attempts)"
+              sleep 2
+            done
+            
+            if [ $attempt -eq $max_attempts ]; then
+              echo "⚠️ Warning: Services may not be fully started"
+            fi
+            
+            # Clean up old images (keep last 2 versions)
+            echo "Cleaning up old images..."
+            docker image prune -f || true
+            
+            echo "✅ Deployment completed successfully!"
+          ENDSSH
+
+      - name: Verify deployment
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.VM_SSH_USER || 'Administrator' }}@${{ secrets.VM_HOST || '103.173.99.253' }} << 'ENDSSH'
+            echo "=== Container Status ==="
+            docker compose ps
+            
+            echo "=== Recent Logs ==="
+            docker compose logs --tail=20
+          ENDSSH
+
+      - name: Health check endpoint
+        run: |
+          sleep 5
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://community.gisul.co.in/health || echo "000")
+          if [ "$response" = "200" ]; then
+            echo "✅ Health check passed"
+          else
+            echo "⚠️ Health check returned: $response"
+            exit 1
+          fi
+
