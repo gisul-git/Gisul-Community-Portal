@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { trainerSignup, customerSignup, API_BASE } from "../api";
 import gisulLogo from "../assets/gisul purple.webp";
-import authImage from "../assets/auth.webp";
+import authImage from "../assets/loginGraphics.png";
 
 export default function Signup({ onSignupSuccess }) {
   // --- STATE VARIABLES (Untouched) ---
@@ -137,12 +137,18 @@ export default function Signup({ onSignupSuccess }) {
         {/* --- LEFT SIDE: VISUALS --- */}
         <div className="hidden lg:flex flex-col w-1/2 justify-center space-y-8 h-full">
           <div className="space-y-4">
-            <h2 className="text-6xl font-black text-slate-800 leading-[1.1] tracking-tight padding-right-4">
-              Join <br /> 
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-500 to-amber-500">
-                The Community.
-              </span>
-            </h2>
+           <h2 className="flex flex-col items-start pr-4">
+  {/* Line 1: Heavy, Industrial, Uppercase */}
+  <span className="text-5xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase leading-[0.85]">
+    JOIN
+  </span>
+
+  {/* Line 2: Elegant, Serif, Italic, Lighter Color */}
+  {/* Using 'font-serif' creates the class contrast. Lowercase looks more 'high-fashion'. */}
+  <span className="text-6xl md:text-7xl font-serif italic font-light text-slate-400 -mt-2 md:-mt-4 ml-1 md:ml-2 leading-none">
+    the community.
+  </span>
+</h2>
             <p className="text-lg text-slate-500 max-w-md leading-relaxed font-medium">
               Start your journey today. Create an account to connect with Trainers and Clients in one unified ecosystem.
             </p>
