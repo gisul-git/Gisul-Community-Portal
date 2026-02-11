@@ -51,6 +51,7 @@ export default function Login({ onLogin, onSwitchToSignup }) {
         }
       }
     } catch (err) {
+      console.log(err);
       setError("Login failed. Please try again.");
       setLoading(false);
     }
@@ -71,7 +72,7 @@ export default function Login({ onLogin, onSwitchToSignup }) {
       {/* 2. Indigo Orb */}
       <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full bg-indigo-200/40 blur-[120px] animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
       {/* 3. NEW: Amber/Yellow Orb (Center-ish for warmth) */}
-      <div className="absolute top-[20%] right-[30%] w-[30%] h-[30%] rounded-full bg-amber-100/50 blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: '4s' }}></div>
+      <div className="absolute top-[20%] right-[30%] w-[30%] h-[30%] rounded-full bg-yellow-100/50 blur-[100px] animate-pulse pointer-events-none" style={{ animationDelay: '4s' }}></div>
 
       <div className="container relative z-10 flex w-full max-w-7xl h-full items-center justify-center lg:justify-between px-6 lg:gap-16">
         
@@ -109,7 +110,7 @@ export default function Login({ onLogin, onSwitchToSignup }) {
           <div className="bg-white/90 backdrop-blur-xl border border-white/60 p-8 md:p-10 rounded-3xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] flex flex-col justify-center relative overflow-hidden">
             
             {/* Subtle top accent line */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 via-indigo-500 to-yellow-400"></div>
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#6953a3] via-purple-400 to-[#F4E403]"></div>
 
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-slate-900">Portal Access</h1>

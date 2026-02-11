@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { searchByJD, uploadJD, searchByText, API_BASE } from "../api";
 
 export default function UnifiedTrainerSearch({ token }) {
@@ -18,7 +18,7 @@ export default function UnifiedTrainerSearch({ token }) {
 
   // Trainer Search state
   const [searchQuery, setSearchQuery] = useState("");
-  const [locationQuery, setLocationQuery] = useState("");
+ // const [locationQuery, setLocationQuery] = useState("");
   const [textResults, setTextResults] = useState([]);
   const [textLoading, setTextLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -186,10 +186,10 @@ export default function UnifiedTrainerSearch({ token }) {
     setSelectedTrainers(newSelected);
   }
 
-  const truncateText = (text, limit = 120) => {
-    if (!text) return "";
-    return text.length > limit ? text.slice(0, limit) + "..." : text;
-  };
+  // const truncateText = (text, limit = 120) => {
+  //   if (!text) return "";
+  //   return text.length > limit ? text.slice(0, limit) + "..." : text;
+  // };
 
   const toggleSkills = (index) => {
     setExpandedSkills((prev) => ({
@@ -633,7 +633,7 @@ export default function UnifiedTrainerSearch({ token }) {
                           {typeof trainer.education === 'string' ? (
                             trainer.education
                           ) : Array.isArray(trainer.education) ? (
-                            trainer.education.map((edu, idx) => 
+                            trainer.education.map((edu) => 
                               typeof edu === 'string' ? edu : 
                               `${edu.degree || ''}${edu.institution ? ` from ${edu.institution}` : ''}`
                             ).filter(Boolean).join(', ')
