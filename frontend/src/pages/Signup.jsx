@@ -328,7 +328,7 @@ export default function Signup({ onSignupSuccess }) {
     <button
       type="submit"
       disabled={loading}
-      className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs uppercase tracking-wide shadow-lg shadow-slate-200 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+      className="w-full py-3 bg-purple-900 hover:bg-purple-800 text-white rounded-lg font-bold text-xs uppercase tracking-wide shadow-lg shadow-slate-200 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-2"
     >
       {loading ? "Creating Account..." : "Sign Up"}
     </button>
