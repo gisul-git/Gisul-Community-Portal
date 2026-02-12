@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Plot from "react-plotly.js";
-import { AnimatePresence } from "framer-motion";
+import {motion, AnimatePresence } from "framer-motion";
 import { getActivityLogs } from "../api";
+
 
 export default function ActivityInsights({ token, embedded = false }) {
   const [activeTab, setActiveTab] = useState("search");
@@ -79,23 +80,18 @@ export default function ActivityInsights({ token, embedded = false }) {
   };
 
   // Helper to generate consistent colors based on user email string
-  const getUserColor = (email) => {
-    if (!email) return "text-gray-700";
-    const colors = [
-      "text-blue-600",
-      "text-emerald-600",
-      "text-orange-600",
-      "text-pink-600",
-      "text-cyan-600",
-      "text-indigo-600",
-      "text-rose-600",
-      "text-teal-600"
-    ];
-    let hash = 0;
-    for (let i = 0; i < email.length; i++) {
-      hash = email.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return colors[Math.abs(hash) % colors.length];
+  const getUserColor = (role) => {
+    switch (role) {
+    case "admin":
+      return "text-purple-700";
+    case "trainer":
+      return "text-blue-600";
+    case "customer":
+    case "client":
+      return "text-emerald-600";
+    default:
+      return "text-gray-600";
+  }
   };
 
   const prepareChartData = () => {
@@ -243,7 +239,7 @@ export default function ActivityInsights({ token, embedded = false }) {
                         <tr key={idx} className="hover:bg-purple-50/40 transition-colors">
                           <td className="px-8 py-5 text-sm text-gray-500 whitespace-nowrap">{formatDate(search.timestamp)}</td>
                           {/* Apply dynamic color to user text */}
-                          <td className={`px-8 py-5 text-sm font-bold ${getUserColor(search.user_email)}`}>{search.user_email}</td>
+                          <td className={`px-8 py-5 text-sm font-bold ${getUserColor(search.user_role)}`}>{search.user_email}</td>
                           <td className="px-8 py-5 text-sm text-gray-600">
                             <span className="bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">"{search.query}"</span>
                           </td>
