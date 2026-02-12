@@ -93,15 +93,6 @@ services:
     volumes:
       # Persistent storage - data survives container restarts/removals
       - mongo_data:/data/db
-      # Note: JSON import files are optional - remove volume mounts if files don't exist on VM
-      # Auto-import JSON dumps into resume_app database (read-only, only on first init)
-      # These are commented out as they may not exist on VM - uncomment if you have these files
-      # - ./resume_app.trainer_profiles.json:/docker-entrypoint-initdb.d/resume_app.trainer_profiles.json:ro
-      # - ./resume_app.admin_users.json:/docker-entrypoint-initdb.d/resume_app.admin_users.json:ro
-      # - ./resume_app.admin_sessions.json:/docker-entrypoint-initdb.d/resume_app.admin_sessions.json:ro
-      # - ./resume_app.customer_users.json:/docker-entrypoint-initdb.d/resume_app.customer_users.json:ro
-      # - ./resume_app.customer_sessions.json:/docker-entrypoint-initdb.d/resume_app.customer_sessions.json:ro
-      # - ./resume_app.jd_search_cache.json:/docker-entrypoint-initdb.d/resume_app.jd_search_cache.json:ro
     networks:
       - gisulmatch_net
 
