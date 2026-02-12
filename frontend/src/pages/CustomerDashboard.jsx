@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { customerSearchByText, customerSearchByJD, uploadJD, API_BASE, postRequirement, getCustomerRequirements } from "../api";
+import { customerSearchByText, uploadJD, API_BASE, postRequirement, getCustomerRequirements } from "../api";
 import gisulLogo from "../assets/gisul final logo yellow-01 2.webp";
 
 export default function CustomerDashboard({ token, onLogout }) {
@@ -45,6 +45,7 @@ export default function CustomerDashboard({ token, onLogout }) {
               const email = payload.email;
               setCustomerName(email.split('@')[0]);
             } catch (e) {
+              console.log(e);
               setCustomerName("Customer");
             }
           }
@@ -55,16 +56,19 @@ export default function CustomerDashboard({ token, onLogout }) {
             const email = payload.email;
             setCustomerName(email.split('@')[0]);
           } catch (e) {
+            console.log(e);
             setCustomerName("Customer");
           }
         }
       } catch (err) {
+        console.log(err);
         // Fallback: try to extract name from email
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           const email = payload.email;
           setCustomerName(email.split('@')[0]);
         } catch (e) {
+          console.log(e);
           setCustomerName("Customer");
         }
       }
@@ -564,7 +568,7 @@ function TrainerSearchEngine({ token }) {
                                   // Separate skills into related (searched/expanded) and unrelated
                                   const relatedSkills = [];
                                   const unrelatedSkills = [];
-                                  const hasExpandedSkills = expandedTerms.length > 0 && relatedSkills.some(s => s.isExpanded);
+                                  //const hasExpandedSkills = expandedTerms.length > 0 && relatedSkills.some(s => s.isExpanded);
                                   
                                   trainer.skills.forEach((skill) => {
                                     const skillLower = skill.toLowerCase();
@@ -578,12 +582,12 @@ function TrainerSearchEngine({ token }) {
                                     }
                                   });
                                   
-                                  const hasAnyExpanded = relatedSkills.some(s => s.isExpanded);
+                                  //const hasAnyExpanded = relatedSkills.some(s => s.isExpanded);
                                   
                                   return (
                                     <>
                                       {/* Show related skills (searched + expanded) */}
-                                      {relatedSkills.map(({ skill, isSearched, isExpanded, skillLower }, skillIdx) => (
+                                      {relatedSkills.map(({ skill, isSearched, isExpanded}, skillIdx) => (
                               <span 
                                 key={skillIdx} 
                                             className={`px-2.5 py-1 rounded-md text-xs font-semibold relative transition-all hover:scale-105 cursor-default ${
@@ -1084,6 +1088,7 @@ function PostedRequirements({ token }) {
         minute: "2-digit",
       });
     } catch (e) {
+      console.log(e);
       return dateString;
     }
   };

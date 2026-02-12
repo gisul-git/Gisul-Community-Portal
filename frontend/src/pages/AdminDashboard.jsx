@@ -674,6 +674,7 @@ function RequirementsApproval({ token, onApproval }) {
         minute: "2-digit",
       });
     } catch (e) {
+      console.log(e)  
       return dateString;
     }
   };
@@ -1091,6 +1092,7 @@ function TrainersList({ token }) {
   const searchInputRef = React.useRef(null);
   const suggestionsRef = React.useRef(null);
 
+  console.log(loadingDomains);
   // Helper function to normalize skills
   const normalizeSkills = (skills) => {
     if (!skills) return [];
@@ -1671,7 +1673,8 @@ function TrainersList({ token }) {
         .filter((y) => y !== null && y !== undefined),
     ),
   ].sort((a, b) => a - b);
-
+ 
+  console.log(experienceYears)
   // Ensure component always renders something
   if (!token) {
     return (
@@ -2633,7 +2636,7 @@ function InlineAnalytics({ token }) {
       const response = await analyticsQuery(token, {
         fields: selectedFields,
         filters: Object.fromEntries(
-          Object.entries(filters).filter(([_, v]) => v !== ""),
+          Object.entries(filters).filter(([v]) => v !== ""),
         ),
       });
 

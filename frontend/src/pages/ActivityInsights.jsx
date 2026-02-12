@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Plot from "react-plotly.js";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { getActivityLogs } from "../api";
 
 export default function ActivityInsights({ token, embedded = false }) {
