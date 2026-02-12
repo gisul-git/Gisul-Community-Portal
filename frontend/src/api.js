@@ -22,7 +22,7 @@ const resolveDefaultApiBase = () => {
   const isLocalhost = hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0";
   const isIPAddress = /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
   
-  // Domain-based deployment (accessed via reverse proxy) - use same hostname without port
+  // Domain-based deployment (accessed via reverse proxy) - uses same hostname without port
   // Examples: community.gisul.co.in, gisul.co.in, etc.
   if (!isLocalhost && !isIPAddress) {
     // Use same protocol and hostname (reverse proxy handles routing)
