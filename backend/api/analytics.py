@@ -98,8 +98,7 @@ async def analytics_query(
         if "skill_category" in fields:
             # Ensure skill_domains exists and is not empty (only if not already filtered)
             if "skill_domains" not in match_stage:
-                # Match documents where skill_domains exists and is not null
-                # The unwind stage with preserveNullAndEmptyArrays: False will filter out empty arrays
+                
                 match_stage["skill_domains"] = {
                     "$exists": True,
                     "$ne": None
