@@ -148,6 +148,7 @@ export default function TrainerDashboard({ token, onLogout }) {
         throw new Error("Update failed");
       }
     } catch (err) {
+      console.log(err);
       setIsAvailable(!newStatus); // Revert if API fails
       setError("Failed to update availability status");
     }
@@ -434,6 +435,7 @@ export default function TrainerDashboard({ token, onLogout }) {
         setError(res.detail || "Failed to delete profile.");
       }
     } catch (e) {
+      console.log(e);
       setError("Failed to delete profile.");
     }
   }

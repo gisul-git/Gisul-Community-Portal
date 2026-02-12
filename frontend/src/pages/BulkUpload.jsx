@@ -131,7 +131,7 @@ export default function BulkUpload({ token }) {
             const total = result.total || 0;
             const failedFiles = result.failed_files || [];
             console.log(`Task SUCCESS: Imported ${imported}/${total} resumes`);
-            
+            console.log(failedFiles);
             // Clear files from display after successful upload
             setFiles([]);
             setFilesRestored(false);
