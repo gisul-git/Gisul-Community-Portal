@@ -2944,20 +2944,43 @@ function InlineAnalytics({ token }) {
               </div>
 
               {/* Skill Category Filter */}
-              <div className="mb-5">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Skill Category
-                </label>
-                <input
-                  type="text"
-                  value={filters.skill_category}
-                  onChange={(e) =>
-                    handleFilterChange("skill_category", e.target.value)
-                  }
-                  placeholder="e.g. Development"
-                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm font-medium transition-all hover:bg-white focus:bg-white outline-none"
-                />
-              </div>
+<div className="mb-5">
+  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+    Skill Category
+  </label>
+  
+  <div className="relative group">
+    <select
+      value={filters.skill_category}
+      onChange={(e) => handleFilterChange("skill_category", e.target.value)}
+      className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl px-4 py-3 pr-10 shadow-sm outline-none transition-all duration-200 
+      hover:border-purple-300 hover:shadow-md hover:shadow-purple-500/10 
+      focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 
+      cursor-pointer placeholder-gray-400"
+    >
+      <option value="">All Categories</option>
+
+      {chartData.map((item, index) => {
+        const label = typeof item._id === "object"
+          ? JSON.stringify(item._id)
+          : String(item._id || "Unknown");
+
+        return (
+          <option key={index} value={label} className="text-gray-900">
+            {label} {item.count ? `(${item.count})` : ''}
+          </option>
+        );
+      })}
+    </select>
+    
+    {/* Custom Arrow Icon */}
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 group-hover:text-purple-500 transition-colors duration-200">
+      <svg className="h-5 w-5 fill-current" viewBox="0 0 20 20">
+        <path fillRule="evenodd" clipRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+      </svg>
+    </div>
+  </div>
+</div>
 
               {/* Location Filter */}
               <div className="mb-8">
