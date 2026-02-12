@@ -242,9 +242,9 @@ export default function Login({ onLogin, onSwitchToSignup }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-sm uppercase tracking-wide shadow-lg shadow-slate-200 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+                className="w-full py-4 bg-purple-900 hover:bg-purple-800 text-white rounded-xl font-bold text-sm uppercase tracking-wide shadow-lg shadow-slate-200 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed mt-2"
               >
-                {loading ? "Verifying Credentials..." : "Secure Login"}
+                {loading ? "Verifying Credentials..." : "Login"}
               </button>
             </form>
 

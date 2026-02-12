@@ -3,7 +3,7 @@ import { customerSearchByText, uploadJD, API_BASE, postRequirement, getCustomerR
 import gisulLogo from "../assets/gisul final logo yellow-01 2.webp";
 
 export default function CustomerDashboard({ token, onLogout }) {
-  const [activeTab, setActiveTab] = useState("search"); // "search" or "post_requirement"
+  const [activeTab, setActiveTab] = useState("search"); // "search" or "post_requirement" or "requirements"
   const [customerName, setCustomerName] = useState("");
 
   // Handle OAuth token from URL parameters
@@ -83,47 +83,47 @@ export default function CustomerDashboard({ token, onLogout }) {
     <div className="min-h-screen bg-[#f8f9fc] font-sans selection:bg-purple-100 pb-20">
       
       {/* --- MAXIMIZED FLOATING NAVBAR --- */}
-<div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6 sm:pt-10">
-  <header className="flex items-center justify-between w-full max-w-7xl bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
-    
-    {/* Left: Brand Identity */}
-    <div className="flex items-center gap-4 sm:gap-5 pl-1">
-      <img 
-        src={gisulLogo} 
-        alt="GISUL" 
-        className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105" 
-      />
-      <div className="hidden sm:flex flex-col justify-center">
-        <span className="font-extrabold text-gray-900 text-xl sm:text-2xl leading-none tracking-tight">GISUL</span>
-        <span className="text-[10px] sm:text-[12px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Customer Portal</span>
-      </div>
-    </div>
+      <div className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-6 sm:pt-10">
+        <header className="flex items-center justify-between w-full max-w-7xl bg-white/90 backdrop-blur-xl rounded-full px-6 sm:px-8 py-2 shadow-[0_12px_40px_rgb(0,0,0,0.12)] border border-white/50 transition-all duration-300">
+          
+          {/* Left: Brand Identity */}
+          <div className="flex items-center gap-4 sm:gap-5 pl-1">
+            <img 
+              src={gisulLogo} 
+              alt="GISUL" 
+              className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105" 
+            />
+            <div className="hidden sm:flex flex-col justify-center">
+              <span className="font-extrabold text-gray-900 text-xl sm:text-2xl leading-none tracking-tight">GISUL</span>
+              <span className="text-[10px] sm:text-[12px] text-gray-500 font-bold uppercase tracking-[0.2em] mt-1">Customer Portal</span>
+            </div>
+          </div>
 
-    {/* Right: Actions */}
-    <div className="flex items-center gap-4 pr-1">
-      {/* Customer Welcome Text */}
-      {customerName && (
-        <div className="hidden md:flex flex-col items-end mr-2">
-          <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Welcome Back</span>
-          <span className="text-sm font-bold text-gray-800">{customerName}</span>
-        </div>
-      )}
-      
-      <button
-        onClick={onLogout}
-        className="group flex items-center gap-3 px-3 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-[#F4E403] text-black font-extrabold text-sm sm:text-base hover:brightness-105 transition-all shadow-lg shadow-yellow-100 transform active:scale-95"
-        title="Logout"
-      >
-        <span className="hidden sm:block">Logout</span>
-        <div className="bg-black/10 rounded-full p-1.5 group-hover:bg-black/20 transition-colors">
-          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </div>
-      </button>
-    </div>
-  </header>
-</div>
+          {/* Right: Actions */}
+          <div className="flex items-center gap-4 pr-1">
+            {/* Customer Welcome Text */}
+            {customerName && (
+              <div className="hidden md:flex flex-col items-end mr-2">
+                <span className="text-xs text-gray-400 font-bold uppercase tracking-wider">Welcome Back</span>
+                <span className="text-sm font-bold text-gray-800">{customerName}</span>
+              </div>
+            )}
+            
+            <button
+              onClick={onLogout}
+              className="group flex items-center gap-3 px-3 sm:px-8 py-2.5 sm:py-3.5 rounded-full bg-[#F4E403] text-black font-extrabold text-sm sm:text-base hover:brightness-105 transition-all shadow-lg shadow-yellow-100 transform active:scale-95"
+              title="Logout"
+            >
+              <span className="hidden sm:block">Logout</span>
+              <div className="bg-black/10 rounded-full p-1.5 group-hover:bg-black/20 transition-colors">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </div>
+            </button>
+          </div>
+        </header>
+      </div>
 
       {/* --- Main Content --- */}
       <main className="flex-1 max-w-[100rem] mx-auto w-full px-4 sm:px-6 md:px-8 pt-40 transition-all duration-300">
@@ -218,12 +218,13 @@ export default function CustomerDashboard({ token, onLogout }) {
 }
 
 // Trainer Search Engine - Enhanced Google-style search
-function TrainerSearchEngine({ token }) {
+function TrainerSearchEngine({ token, initialQuery = "" }) {
   // Persist search state in localStorage
   const getStoredState = () => {
     try {
       const stored = localStorage.getItem('customer_search_state');
-      if (stored) {
+      // Only use stored state if no initialQuery is passed (normal search mode)
+      if (stored && !initialQuery) {
         const parsed = JSON.parse(stored);
         return {
           searchQuery: parsed.searchQuery || "",
@@ -237,7 +238,7 @@ function TrainerSearchEngine({ token }) {
       console.warn("Failed to load stored search state:", e);
     }
     return {
-      searchQuery: "",
+      searchQuery: initialQuery || "",
       results: [],
       hasSearched: false,
       expandedTerms: [],
@@ -246,6 +247,9 @@ function TrainerSearchEngine({ token }) {
   };
 
   const saveState = (state) => {
+    // Never save state if we are in "Match Mode" (initialQuery present)
+    if (initialQuery) return; 
+
     try {
       localStorage.setItem('customer_search_state', JSON.stringify(state));
     } catch (e) {
@@ -265,6 +269,13 @@ function TrainerSearchEngine({ token }) {
   // Ref for scrolling to results/loading area
   const resultsRef = useRef(null);
   
+  // Auto-trigger search if initialQuery is provided on mount
+  useEffect(() => {
+    if (initialQuery && searchQuery) {
+        handleSearch();
+    }
+  }, []);
+
   async function handleSearch() {
     if (!searchQuery.trim()) {
       alert("Please enter a search query (e.g., 'etl trainer from bangalore')");
@@ -274,14 +285,12 @@ function TrainerSearchEngine({ token }) {
     setLoading(true);
     setHasSearched(false);
     
-    // Scroll to loading animation area immediately
-    if (resultsRef.current) {
+    // Only scroll in normal mode. In match mode, we are already at the top.
+    if (resultsRef.current && !initialQuery) {
         resultsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     try {
-      // --- FIX: Pass 'undefined' for location to remove it from the payload ---
-      // This prevents the 422 error (for null) and empty results (for empty string)
       const data = await customerSearchByText(token, searchQuery, undefined, 50);
       
       // Robust data handling for array or object responses
@@ -346,115 +355,132 @@ function TrainerSearchEngine({ token }) {
     setExpandedTerms([]);
     setLastSearchSkill("");
     setIsFocused(false);
-    localStorage.removeItem('customer_search_state');
+    if (!initialQuery) {
+        localStorage.removeItem('customer_search_state');
+    }
   };
 
   return (
     <div className="w-full max-w-[100rem] mx-auto animate-fade-in">
-      {/* Enhanced Search Bar */}
-      <div className="flex flex-col items-center justify-center min-h-[400px] py-10 transition-all duration-500">
-        <div className="w-full mb-6">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-              Find Your Perfect Trainer
-            </h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto font-light">
-                Connect with top-tier professionals tailored to your specific training requirements.
-            </p>
-          </div>
-          
-          <div className="relative max-w-3xl mx-auto group">
-            <div className={`absolute -inset-1 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-500 ${isFocused ? 'opacity-50' : ''}`}></div>
+      
+      {/* --- CONDITIONAL SEARCH UI --- */}
+      {/* If initialQuery exists (Match Mode), we HIDE the entire search bar and just show a header */}
+      {!initialQuery ? (
+        <div className="flex flex-col items-center justify-center min-h-[400px] py-10 transition-all duration-500">
+            <div className="w-full mb-6">
+            <div className="text-center mb-10">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
+                Find Your Perfect Trainer
+                </h2>
+                <p className="text-gray-500 text-lg max-w-2xl mx-auto font-light">
+                    Connect with top-tier professionals tailored to your specific training requirements.
+                </p>
+            </div>
             
-            <div className="relative bg-white rounded-full shadow-xl">
-                 {/* Search Icon */}
-                <div className={`absolute left-6 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${isFocused ? "text-purple-600" : "text-gray-400"}`}>
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                </div>
+            <div className="relative max-w-3xl mx-auto group">
+                <div className={`absolute -inset-1 bg-gradient-to-r from-purple-400 to-indigo-400 rounded-full blur opacity-20 group-hover:opacity-40 transition duration-500 ${isFocused ? 'opacity-50' : ''}`}></div>
                 
-                {/* Search Input */}
-                <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                placeholder="Search by skills (e.g., 'etl trainer from bangalore')..."
-                className={`w-full pl-16 pr-24 py-5 text-lg rounded-full focus:outline-none transition-all duration-300 bg-transparent placeholder-gray-400 text-gray-800 ${
-                    isFocused 
-                    ? "ring-0" 
-                    : ""
-                }`}
-                autoFocus
-                />
-                
-                {/* Clear Button */}
-                {searchQuery && (
-                <button
-                    onClick={clearSearch}
-                    className="absolute right-28 top-1/2 transform -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition text-gray-400 hover:text-red-500"
-                    title="Clear"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <div className="relative bg-white rounded-full shadow-xl">
+                    {/* Search Icon */}
+                    <div className={`absolute left-6 top-1/2 transform -translate-y-1/2 transition-colors duration-200 ${isFocused ? "text-purple-600" : "text-gray-400"}`}>
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                </button>
-                )}
-                
-                {/* Search Button */}
-                <div className="absolute right-2 top-2 bottom-2">
-                    <button
-                    onClick={handleSearch}
-                    disabled={loading || !searchQuery.trim()}
-                    className={`h-full px-6 rounded-full font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
-                        searchQuery.trim() 
-                        ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-lg hover:scale-105 active:scale-95 text-white" 
-                        : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                    </div>
+                    
+                    {/* Search Input */}
+                    <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder="Search by skills (e.g., 'etl trainer from bangalore')..."
+                    className={`w-full pl-16 pr-24 py-5 text-lg rounded-full focus:outline-none transition-all duration-300 bg-transparent placeholder-gray-400 text-gray-800 ${
+                        isFocused 
+                        ? "ring-0" 
+                        : ""
                     }`}
-                    title="Search"
+                    autoFocus
+                    />
+                    
+                    {/* Clear Button */}
+                    {searchQuery && (
+                    <button
+                        onClick={clearSearch}
+                        className="absolute right-28 top-1/2 transform -translate-y-1/2 p-2 rounded-full hover:bg-gray-100 transition text-gray-400 hover:text-red-500"
+                        title="Clear"
                     >
-                    {loading ? (
-                        <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
-                    ) : (
-                        <>
-                        <span className="hidden sm:inline">Search</span>
-                        </>
-                    )}
                     </button>
+                    )}
+                    
+                    {/* Search Button */}
+                    <div className="absolute right-2 top-2 bottom-2">
+                        <button
+                        onClick={handleSearch}
+                        disabled={loading || !searchQuery.trim()}
+                        className={`h-full px-6 rounded-full font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
+                            searchQuery.trim() 
+                            ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:shadow-lg hover:scale-105 active:scale-95 text-white" 
+                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                        }`}
+                        title="Search"
+                        >
+                        {loading ? (
+                            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                            <>
+                            <span className="hidden sm:inline">Search</span>
+                            </>
+                        )}
+                        </button>
+                    </div>
                 </div>
             </div>
-          </div>
-          
-          {/* Enhanced Helper Text with Examples */}
-          <div className="mt-8 text-center">
-            <p className="text-sm font-medium text-gray-500 mb-4 uppercase tracking-wide">Quick Search Examples</p>
-            <div className="flex flex-wrap justify-center gap-3">
-              {["Python developer", "React expert", "etl trainer from bangalore", "data engineer from mumbai"].map((example, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setSearchQuery(example);
-                    setTimeout(() => handleSearch(), 100);
-                  }}
-                  className="px-4 py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-purple-600 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
-                >
-                  {example}
-                </button>
-              ))}
+            
+            {/* Enhanced Helper Text with Examples */}
+            <div className="mt-8 text-center">
+                <p className="text-sm font-medium text-gray-500 mb-4 uppercase tracking-wide">Quick Search Examples</p>
+                <div className="flex flex-wrap justify-center gap-3">
+                {["Python developer", "React expert", "etl trainer from bangalore", "data engineer from mumbai"].map((example, idx) => (
+                    <button
+                    key={idx}
+                    onClick={() => {
+                        setSearchQuery(example);
+                        setTimeout(() => handleSearch(), 100);
+                    }}
+                    className="px-4 py-2 text-xs sm:text-sm bg-white border border-gray-200 rounded-lg text-gray-600 hover:text-purple-600 hover:border-purple-300 hover:bg-purple-50 transition-all duration-200 shadow-sm hover:shadow-md active:scale-95"
+                    >
+                    {example}
+                    </button>
+                ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                Smart Location Detection enabled (e.g., "in mumbai")
+                </p>
             </div>
-            <p className="text-xs text-gray-400 mt-4 flex items-center justify-center gap-1">
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              Smart Location Detection enabled (e.g., "in mumbai")
-            </p>
-          </div>
+            </div>
         </div>
-      </div>
+      ) : (
+        // --- MATCH MODE HEADER (Simple, no search bar) ---
+        <div className="mb-8 mt-2 border-b border-gray-100 pb-6">
+           <h2 className="text-2xl font-bold text-gray-800">Matched Trainers</h2>
+           <div className="flex items-center gap-2 mt-2">
+             <span className="text-sm text-gray-500">Based on requirement:</span>
+             <span className="text-sm font-semibold text-purple-700 bg-purple-50 px-3 py-1 rounded-full truncate max-w-2xl" title={searchQuery}>
+               {searchQuery}
+             </span>
+           </div>
+        </div>
+      )}
 
       {/* Loading Animation */}
       {loading && (
@@ -494,7 +520,8 @@ function TrainerSearchEngine({ token }) {
                   Found <span className="font-bold text-purple-600 px-2 py-0.5 bg-purple-100 rounded-md mx-1">{results.length}</span> {results.length === 1 ? "trainer" : "trainers"} matching your criteria
                 </p>
               </div>
-              {results.length > 0 && (
+              {/* Only show clear button if NOT in Match Mode (initialQuery) */}
+              {results.length > 0 && !initialQuery && (
                 <button
                   onClick={clearSearch}
                   className="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-gray-200 hover:border-red-200"
@@ -553,8 +580,8 @@ function TrainerSearchEngine({ token }) {
                                 trainer.experience_years > 8 
                                 ? "bg-green-100 text-green-700" 
                                 : trainer.experience_years > 4 
-                                    ? "bg-blue-100 text-blue-700" 
-                                    : "bg-gray-100 text-gray-700"
+                                  ? "bg-blue-100 text-blue-700" 
+                                  : "bg-gray-100 text-gray-700"
                             }`}>
                               {trainer.experience_years ? `${trainer.experience_years} years` : "N/A"}
                             </span>
@@ -565,10 +592,8 @@ function TrainerSearchEngine({ token }) {
                             {trainer.skills && trainer.skills.length > 0 ? (
                               <>
                                 {(() => {
-                                  // Separate skills into related (searched/expanded) and unrelated
                                   const relatedSkills = [];
                                   const unrelatedSkills = [];
-                                  //const hasExpandedSkills = expandedTerms.length > 0 && relatedSkills.some(s => s.isExpanded);
                                   
                                   trainer.skills.forEach((skill) => {
                                     const skillLower = skill.toLowerCase();
@@ -582,68 +607,63 @@ function TrainerSearchEngine({ token }) {
                                     }
                                   });
                                   
-                                  //const hasAnyExpanded = relatedSkills.some(s => s.isExpanded);
-                                  
                                   return (
                                     <>
-                                      {/* Show related skills (searched + expanded) */}
                                       {relatedSkills.map(({ skill, isSearched, isExpanded}, skillIdx) => (
-                              <span 
-                                key={skillIdx} 
+                                          <span 
+                                            key={skillIdx} 
                                             className={`px-2.5 py-1 rounded-md text-xs font-semibold relative transition-all hover:scale-105 cursor-default ${
                                               isSearched 
                                                 ? "bg-amber-100 text-amber-800 border border-amber-200" 
                                                 : "bg-purple-100 text-purple-700 border border-purple-200"
                                             }`}
-                              >
-                                {skill}
+                                          >
+                                            {skill}
                                             {isExpanded && (
                                               <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full ring-2 ring-white"></span>
                                             )}
-                              </span>
-                            ))}
-                                    
-                                    {/* Show unrelated skills count */}
-                                    {unrelatedSkills.length > 0 && (
-                                      <span 
-                                        className="px-2.5 py-1 rounded-md text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors"
-                                      >
-                                        +{unrelatedSkills.length} more
-                                      </span>
-                                    )}
-                                    
-                                    {/* Single tooltip for other skills - appears on hover over skills area */}
-                                    {unrelatedSkills.length > 0 && (
-                                      <div className="absolute bottom-full left-0 mb-2 hidden group-hover/skills:block z-[50] min-w-[280px] pointer-events-none">
-                                        <div className="bg-gray-900 text-white rounded-lg py-3 px-4 shadow-xl pointer-events-auto">
-                                          <div className="text-xs font-bold text-gray-300 mb-2 flex items-center gap-1.5 uppercase tracking-wide">
-                                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                                            </svg>
-                                            Full Skill Set
+                                          </span>
+                                        ))}
+                                      
+                                      {unrelatedSkills.length > 0 && (
+                                        <span 
+                                          className="px-2.5 py-1 rounded-md text-xs font-medium bg-gray-50 text-gray-500 border border-gray-200 hover:bg-gray-100 transition-colors"
+                                        >
+                                          +{unrelatedSkills.length} more
+                                        </span>
+                                      )}
+                                      
+                                      {/* Full skills tooltip */}
+                                      {unrelatedSkills.length > 0 && (
+                                        <div className="absolute bottom-full left-0 mb-2 hidden group-hover/skills:block z-[50] min-w-[280px] pointer-events-none">
+                                          <div className="bg-gray-900 text-white rounded-lg py-3 px-4 shadow-xl pointer-events-auto">
+                                            <div className="text-xs font-bold text-gray-300 mb-2 flex items-center gap-1.5 uppercase tracking-wide">
+                                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                              </svg>
+                                              Full Skill Set
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto custom-scrollbar">
+                                              {unrelatedSkills.map((skill, idx) => (
+                                                <span key={idx} className="px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs">
+                                                  {skill}
+                                                </span>
+                                              ))}
+                                            </div>
                                           </div>
-                                          <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto custom-scrollbar">
-                                            {unrelatedSkills.map((skill, idx) => (
-                                              <span key={idx} className="px-2 py-1 bg-gray-800 text-gray-300 rounded text-xs">
-                                                {skill}
-                                              </span>
-                                            ))}
+                                          <div className="absolute top-full left-6 -mt-1 pointer-events-none">
+                                            <div className="w-2 h-2 bg-gray-900 transform rotate-45"></div>
                                           </div>
                                         </div>
-                                        {/* Arrow pointer */}
-                                        <div className="absolute top-full left-6 -mt-1 pointer-events-none">
-                                          <div className="w-2 h-2 bg-gray-900 transform rotate-45"></div>
-                                        </div>
-                                      </div>
-                                    )}
-                                  </>
-                                );
-                              })()}
-                            </>
+                                      )}
+                                    </>
+                                  );
+                                })()}
+                              </>
                             ) : (
                               <span className="text-xs text-gray-400 italic">No specific skills listed</span>
-                      )}
-                    </div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="text-sm text-gray-600 max-w-[150px] truncate" title={trainer.companies ? trainer.companies.join(", ") : ""}>
@@ -789,9 +809,9 @@ function RequirementPosting({ token }) {
         setPosted(true);
         // Clear form after successful post
       setTimeout(() => {
-          clearAll();
-          setPosted(false);
-        }, 2000);
+        clearAll();
+        setPosted(false);
+      }, 2000);
         alert("Requirement posted successfully! Waiting for admin approval.");
       }
     } catch (err) {
@@ -961,10 +981,10 @@ function RequirementPosting({ token }) {
         <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
              {(requirementText || uploadedFileText) && (
              <button
-                onClick={clearAll}
-                className="px-6 py-4 text-sm font-bold text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+               onClick={clearAll}
+               className="px-6 py-4 text-sm font-bold text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
              >
-                Clear Form
+               Clear Form
              </button>
             )}
 
@@ -1030,6 +1050,7 @@ function RequirementPosting({ token }) {
 function PostedRequirements({ token }) {
   const [requirements, setRequirements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [viewingMatchesFor, setViewingMatchesFor] = useState(null);
 
   useEffect(() => {
     async function fetchRequirements() {
@@ -1042,13 +1063,32 @@ function PostedRequirements({ token }) {
         setLoading(false);
       }
     }
-    if (token) {
+    if (token && !viewingMatchesFor) { 
       fetchRequirements();
       // Refresh every 30 seconds
       const interval = setInterval(fetchRequirements, 30000);
       return () => clearInterval(interval);
     }
-  }, [token]);
+  }, [token, viewingMatchesFor]);
+
+  const handleViewMatches = (req) => {
+    // Construct query from skills (comma separated) or domain or text
+    let query = "";
+    if (req.skills && req.skills.length > 0) {
+        query = req.skills.join(", ");
+    } else if (req.domain) {
+        query = `${req.domain} trainer`;
+    } else {
+        // Fallback to first few words of text
+        query = req.requirement_text ? req.requirement_text.split(" ").slice(0, 5).join(" ") : "trainer";
+    }
+    // Set the full object so we can use its ID or other props if needed later
+    setViewingMatchesFor({ ...req, computedQuery: query });
+  };
+
+  const handleBackToRequirements = () => {
+    setViewingMatchesFor(null);
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -1092,6 +1132,27 @@ function PostedRequirements({ token }) {
       return dateString;
     }
   };
+
+  // If viewing matches, render the search engine instead of the list
+  if (viewingMatchesFor) {
+    return (
+        <div className="w-full max-w-[100rem] mx-auto animate-fade-in pb-12">
+            <div className="mb-6 flex items-center">
+                <button 
+                    onClick={handleBackToRequirements}
+                    className="flex items-center gap-2 text-gray-600 hover:text-purple-600 font-bold transition-colors bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to My Requirements
+                </button>
+            </div>
+            {/* Embed TrainerSearchEngine here with the computed query */}
+            <TrainerSearchEngine token={token} initialQuery={viewingMatchesFor.computedQuery} />
+        </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[100rem] mx-auto animate-fade-in pb-12">
@@ -1145,6 +1206,19 @@ function PostedRequirements({ token }) {
                         <div className="flex flex-wrap items-center gap-3 mb-3">
                             <h3 className="text-lg font-bold text-gray-800">Requirement #{requirements.length - idx}</h3>
                             {getStatusBadge(req.status)}
+                            
+                            {/* Action Button for Approved Requirements */}
+                            {req.status === "approved" && (
+                                <button
+                                    onClick={() => handleViewMatches(req)}
+                                    className="ml-auto sm:ml-2 flex items-center gap-2 px-4 py-1.5 bg-purple-600 text-white text-xs font-bold rounded-full hover:bg-purple-700 hover:shadow-lg transition-all transform active:scale-95"
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    View Matched Trainers
+                                </button>
+                            )}
                         </div>
                         
                         <div className="flex items-center gap-4 text-xs font-medium text-gray-500 mb-4">
