@@ -202,8 +202,16 @@ jobs:
           # Create temporary directory structure
           mkdir -p /tmp/deploy
           
-          # Copy docker-compose.yml
-          cp docker-compose.yml /tmp/deploy/docker-compose.yml
+          # Copy docker-compose.prod.yml and update image names
+          BACKEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest"
+          FRONTEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest"
+          CELERY_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-celery:latest"
+          
+          # Copy prod compose file and replace image placeholders
+          sed -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-backend:latest|$BACKEND_IMAGE|g" \
+              -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-frontend:latest|$FRONTEND_IMAGE|g" \
+              -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-celery:latest|$CELERY_IMAGE|g" \
+              docker-compose.prod.yml > /tmp/deploy/docker-compose.yml
           
           # Copy .env file
           cp backend.env /tmp/deploy/backend.env
@@ -259,26 +267,22 @@ jobs:
             cp /tmp/deploy/backend.env backend/.env
             echo "✅ .env file created in backend/.env"
             
-            # Copy docker-compose.yml if using production version
+            # Copy docker-compose.yml (already has correct image names from previous step)
             if [ -f "/tmp/deploy/docker-compose.yml" ]; then
               cp /tmp/deploy/docker-compose.yml docker-compose.yml
+              echo "✅ docker-compose.yml copied with pre-built images"
+            else
+              echo "❌ ERROR: docker-compose.yml not found in /tmp/deploy/"
+              exit 1
             fi
             
-            # Update docker-compose.yml to use GHCR images
-            # Replace build: sections with image: for production deployment
-            if grep -q "build:" docker-compose.yml; then
-              # Create a temporary file with image references
-              sed -i.bak \
-                -e "s|build:.*dockerfile: backend/Dockerfile|image: $BACKEND_IMAGE|" \
-                -e "s|build:.*dockerfile: backend/Dockerfile.celery|image: $CELERY_IMAGE|" \
-                -e "s|build:.*dockerfile: frontend/Dockerfile|image: $FRONTEND_IMAGE|" \
-                docker-compose.yml
-              echo "✅ Updated docker-compose.yml to use pre-built images"
-            fi
-            
-            # Stop existing containers
+            # Stop and remove existing containers (by name to handle containers from different locations)
             echo "Stopping existing containers..."
-            docker compose down || true
+            docker compose down --remove-orphans || true
+            
+            # Force remove containers by name if they still exist (from old deployments)
+            echo "Removing any remaining containers with same names..."
+            docker rm -f gisulmatch-backend gisulmatch-frontend gisulmatch-worker gisulmatch-redis 2>/dev/null || true
             
             # Pull latest images
             echo "Pulling latest images..."
@@ -322,6 +326,28 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no \
             ${{ secrets.VM_SSH_USER || 'Administrator' }}@${{ secrets.VM_HOST || '103.173.99.253' }} << 'ENDSSH'
+            set -e
+            
+            # Navigate to project directory (same logic as deploy step)
+            PROJECT_DIR="${{ secrets.VM_PROJECT_DIR || '/mnt/c/Users/Administrator/GisulCommunity' }}"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              # Try alternative paths
+              for alt_dir in ~/GisulCommunity /c/Users/Administrator/GisulCommunity C:/Users/Administrator/GisulCommunity; do
+                if [ -d "$alt_dir" ]; then
+                  PROJECT_DIR="$alt_dir"
+                  break
+                fi
+              done
+            fi
+            
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "ERROR: Project directory not found."
+              exit 1
+            fi
+            
+            cd "$PROJECT_DIR"
+            echo "Working directory: $(pwd)"
+            
             echo "=== Container Status ==="
             docker compose ps
             

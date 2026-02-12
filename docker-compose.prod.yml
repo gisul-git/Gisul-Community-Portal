@@ -21,7 +21,6 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
     depends_on:
-      - mongo
       - redis
     volumes:
       - faiss_data:/app/backend/data
@@ -39,7 +38,6 @@ services:
     depends_on:
       - redis
       - backend
-      - mongo
     env_file:
       - backend/.env
     environment:
@@ -59,8 +57,9 @@ services:
     image: ghcr.io/REPLACE_WITH_OWNER/gisul-community-frontend:latest
     container_name: gisulmatch-frontend
     restart: always
-    expose:
-      - "80"
+    # Expose port to host for VM nginx to access
+    ports:
+      - "8080:80"
     depends_on:
       - backend
     networks:
@@ -81,26 +80,9 @@ services:
       - gisulmatch_net
 
   # -----------------------------------------------------------
-  # MongoDB (Auto-import JSON data)
+  # MongoDB: Using MongoDB Atlas (configured via MONGO_URI in .env)
+  # No local MongoDB container needed
   # -----------------------------------------------------------
-  mongo:
-    image: mongo:6
-    container_name: gisulmatch-mongo
-    restart: always
-    expose:
-      - "27017"
-    volumes:
-      # Persistent storage - data survives container restarts/removals
-      - mongo_data:/data/db
-      # Auto-import JSON dumps into resume_app database (read-only, only on first init)
-      - ./resume_app.trainer_profiles.json:/docker-entrypoint-initdb.d/resume_app.trainer_profiles.json:ro
-      - ./resume_app.admin_users.json:/docker-entrypoint-initdb.d/resume_app.admin_users.json:ro
-      - ./resume_app.admin_sessions.json:/docker-entrypoint-initdb.d/resume_app.admin_sessions.json:ro
-      - ./resume_app.customer_users.json:/docker-entrypoint-initdb.d/resume_app.customer_users.json:ro
-      - ./resume_app.customer_sessions.json:/docker-entrypoint-initdb.d/resume_app.customer_sessions.json:ro
-      - ./resume_app.jd_search_cache.json:/docker-entrypoint-initdb.d/resume_app.jd_search_cache.json:ro
-    networks:
-      - gisulmatch_net
 
 # -----------------------------------------------------------
 # Shared Network and Volumes
@@ -112,8 +94,6 @@ networks:
 volumes:
   # Named volumes - persist data even when containers are removed
   # Data is stored in Docker's volume directory (survives docker-compose down)
-  mongo_data:
-    driver: local
   redis_data:
     driver: local
   faiss_data:
