@@ -276,9 +276,13 @@ jobs:
               exit 1
             fi
             
-            # Stop existing containers
+            # Stop and remove existing containers (by name to handle containers from different locations)
             echo "Stopping existing containers..."
-            docker compose down || true
+            docker compose down --remove-orphans || true
+            
+            # Force remove containers by name if they still exist (from old deployments)
+            echo "Removing any remaining containers with same names..."
+            docker rm -f gisulmatch-backend gisulmatch-frontend gisulmatch-worker gisulmatch-redis gisulmatch-mongo 2>/dev/null || true
             
             # Pull latest images
             echo "Pulling latest images..."
@@ -322,6 +326,28 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no \
             ${{ secrets.VM_SSH_USER || 'Administrator' }}@${{ secrets.VM_HOST || '103.173.99.253' }} << 'ENDSSH'
+            set -e
+            
+            # Navigate to project directory (same logic as deploy step)
+            PROJECT_DIR="${{ secrets.VM_PROJECT_DIR || '/mnt/c/Users/Administrator/GisulCommunity' }}"
+            if [ ! -d "$PROJECT_DIR" ]; then
+              # Try alternative paths
+              for alt_dir in ~/GisulCommunity /c/Users/Administrator/GisulCommunity C:/Users/Administrator/GisulCommunity; do
+                if [ -d "$alt_dir" ]; then
+                  PROJECT_DIR="$alt_dir"
+                  break
+                fi
+              done
+            fi
+            
+            if [ ! -d "$PROJECT_DIR" ]; then
+              echo "ERROR: Project directory not found."
+              exit 1
+            fi
+            
+            cd "$PROJECT_DIR"
+            echo "Working directory: $(pwd)"
+            
             echo "=== Container Status ==="
             docker compose ps
             
