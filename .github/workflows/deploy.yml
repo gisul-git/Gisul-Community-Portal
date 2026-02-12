@@ -282,7 +282,7 @@ jobs:
             
             # Force remove containers by name if they still exist (from old deployments)
             echo "Removing any remaining containers with same names..."
-            docker rm -f gisulmatch-backend gisulmatch-frontend gisulmatch-worker gisulmatch-redis gisulmatch-mongo 2>/dev/null || true
+            docker rm -f gisulmatch-backend gisulmatch-frontend gisulmatch-worker gisulmatch-redis 2>/dev/null || true
             
             # Pull latest images
             echo "Pulling latest images..."
