@@ -361,9 +361,20 @@ class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         # Only redirect in production
-        if os.getenv("ENVIRONMENT") == "production" and request.url.scheme == "http":
-            https_url = request.url.replace(scheme="https")
-            return RedirectResponse(url=str(https_url), status_code=301)
+        if os.getenv("ENVIRONMENT") == "production":
+            # Check X-Forwarded-Proto header (set by nginx reverse proxy)
+            # This tells us the actual protocol the client used, not the internal Docker network protocol
+            forwarded_proto = request.headers.get("X-Forwarded-Proto", "").lower()
+            
+            # Only redirect if X-Forwarded-Proto is explicitly "http"
+            # If it's "https" or missing (which shouldn't happen behind nginx), don't redirect
+            # This prevents redirect loops when behind a reverse proxy that terminates HTTPS
+            if forwarded_proto == "http":
+                # Build HTTPS URL using the host from the request
+                # Preserve the original path and query string
+                https_url = str(request.url).replace("http://", "https://", 1)
+                logger.warning(f"HTTPS redirect triggered: {request.url} -> {https_url} (X-Forwarded-Proto: {forwarded_proto})")
+                return RedirectResponse(url=https_url, status_code=301)
         
         return await call_next(request)
 

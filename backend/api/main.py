@@ -104,8 +104,7 @@ def generate_skill_variations(skill: str) -> List[str]:
         else:
             del _skill_variations_cache[cache_key]
     
-    # Step 1: Get all actual skills from resumes FIRST (cached, fast)
-    # This is critical - we need to match against actual skills in the database
+    
     try:
         from services.vector_store import get_all_resume_skills
         valid_skills = get_all_resume_skills()

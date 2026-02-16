@@ -7,13 +7,9 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# MongoDB URI - use service name in Docker network (mongo:27017) or env variable
-# For Docker: mongodb://mongo:27017
-# For local dev: mongodb://localhost:27017
+
 mongo_uri_env = os.getenv("MONGO_URI", "").strip()
 if not mongo_uri_env:
-    # Auto-detect: if running in Docker, use service name; otherwise use localhost
-    # Check if we're in Docker by looking for common Docker environment variables
     is_docker = os.getenv("DOCKER_CONTAINER") or os.path.exists("/.dockerenv")
     default_mongo_uri = "mongodb://mongo:27017" if is_docker else "mongodb://localhost:27017"
     mongo_uri = default_mongo_uri
