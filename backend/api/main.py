@@ -928,10 +928,22 @@ async def startup_initialization():
             store_reindex_version(REINDEX_VERSION)
             logging.info("✅ Incremental reindex completed (only missing profiles were indexed)")
         except Exception as e:
-            logging.error(f"❌ Reindex failed: {e}")
-            import traceback
-            logging.error(traceback.format_exc())
+            error_msg = str(e)
+            is_connection_error = "Connection refused" in error_msg or "timed out" in error_msg.lower() or "Errno 111" in error_msg
+            
+            if is_connection_error:
+                logging.warning(f"⚠️ Reindex skipped due to MongoDB connection issue: {error_msg[:200]}")
+                logging.warning("⚠️ The application will start, but reindexing will be retried on next startup")
+                logging.warning("⚠️ Please check:")
+                logging.warning("   1. MongoDB Atlas IP whitelist includes your server IP")
+                logging.warning("   2. Connection string format (should use mongodb+srv:// for Atlas)")
+                logging.warning("   3. Network connectivity from Docker container to MongoDB Atlas")
+            else:
+                logging.error(f"❌ Reindex failed: {e}")
+                import traceback
+                logging.error(traceback.format_exc())
             # Don't store version if reindex failed - will retry on next startup
+            # Application will continue to start even if reindex fails
         
         logging.info("🎉 Startup initialization completed successfully")
         
@@ -4240,12 +4252,35 @@ async def get_all_requirements(user=Depends(get_admin_user)):
 @app.get("/admin/requirements/pending_count")
 async def get_pending_requirements_count(user=Depends(get_admin_user)):
     """Get count of pending requirements for notification"""
-    try:
-        count = await customer_requirements.count_documents({"status": "pending"})
-        return {"pending_count": count}
-    except Exception as e:
-        logging.error(f"Error fetching pending count: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching pending count: {str(e)}")
+    import asyncio
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            count = await customer_requirements.count_documents({"status": "pending"})
+            return {"pending_count": count}
+        except Exception as e:
+            error_msg = str(e)
+            is_timeout = "timed out" in error_msg.lower() or "timeout" in error_msg.lower()
+            
+            if attempt < max_retries - 1 and is_timeout:
+                # Retry on timeout with exponential backoff
+                wait_time = retry_delay * (2 ** attempt)
+                logging.warning(f"⚠️ MongoDB timeout on attempt {attempt + 1}/{max_retries}, retrying in {wait_time}s...")
+                await asyncio.sleep(wait_time)
+                continue
+            else:
+                # Final attempt failed or non-timeout error
+                logging.error(f"Error fetching pending count: {e}")
+                # Return 0 instead of error to prevent UI issues
+                if is_timeout:
+                    logging.warning("⚠️ Returning default count (0) due to MongoDB timeout")
+                    return {"pending_count": 0}
+                raise HTTPException(status_code=500, detail=f"Error fetching pending count: {str(e)}")
+    
+    # Should not reach here, but return default if it does
+    return {"pending_count": 0}
 
 @app.get("/admin/dashboard")
 async def get_admin_dashboard(user=Depends(get_admin_user)):
