@@ -19,13 +19,18 @@ else:
 db_name = os.getenv("MONGO_DB_NAME", "resume_app")
 
 connection_options = {
-    "serverSelectionTimeoutMS": 30000,
-    "connectTimeoutMS": 20000,
-    "socketTimeoutMS": 20000,
+    "serverSelectionTimeoutMS": 60000,  # Increased to 60 seconds for Atlas
+    "connectTimeoutMS": 60000,  # Increased to 60 seconds
+    "socketTimeoutMS": 60000,  # Increased to 60 seconds
     "retryWrites": True,
     "retryReads": True,
     "maxPoolSize": 50,
     "minPoolSize": 10,
+    "maxIdleTimeMS": 45000,  # Close idle connections after 45 seconds
+    "heartbeatFrequencyMS": 10000,  # Check server status every 10 seconds
+    "w": "majority",  # Write concern
+    "readPreference": "primaryPreferred",  # Prefer primary, fallback to secondary
+    "directConnection": False,  # Use replica set connection
 }
 
 def get_db_client():
