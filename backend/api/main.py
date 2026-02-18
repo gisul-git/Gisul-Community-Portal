@@ -1250,9 +1250,18 @@ async def add_new_admin(admin_data: AdminSignup, user=Depends(get_admin_user)):
     """
     # 1. Security Check: Ensure the requester is a Super Admin
     # You can move this list to .env
-    SUPER_ADMINS = ["team@gisul.co.in", "shaveta.goyal@gisul.co.in", "sahil.goyal@gisul.co.in"] 
+    SUPER_ADMINS = [
+        "team@gisul.co.in", 
+        "shaveta.goyal@gisul.co.in", 
+        "sahil.goyal@gisul.co.in",
+        "super@gisul.com"
+    ]
     
-    if user["email"] not in SUPER_ADMINS:
+    # Case-insensitive check
+    user_email_lower = user["email"].lower().strip()
+    super_admin_emails_lower = [email.lower().strip() for email in SUPER_ADMINS]
+    
+    if user_email_lower not in super_admin_emails_lower:
         raise HTTPException(status_code=403, detail="Only Super Admins can add new admins.")
 
     # 2. Check if email already exists
