@@ -21,7 +21,14 @@ import {
 } from "../api";
 import gisulLogo from "../assets/gisul final logo yellow-01 2.webp";
 
-const SUPER_ADMINS = ["team@gisul.co.in", "super@gisul.com"];
+const SUPER_ADMINS = ["shaveta.goyal@gisul.co.in", "sahil.goyal@gisul.co.in", "team@gisul.co.in", "super@gisul.com"];
+
+// Helper function to check if email is a super admin (case-insensitive)
+const isSuperAdmin = (email) => {
+  if (!email) return false;
+  const emailLower = email.toLowerCase().trim();
+  return SUPER_ADMINS.some(superAdmin => superAdmin.toLowerCase().trim() === emailLower);
+};
 
 export default function AdminDashboard({ token, onLogout }) {
   const [searchParams] = useSearchParams();
@@ -37,13 +44,37 @@ export default function AdminDashboard({ token, onLogout }) {
   });
   const [isAddingAdmin, setIsAddingAdmin] = useState(false);
 
-  // Fetch current admin info on mount
+  // Get email from JWT token immediately (fallback while API loads)
+  useEffect(() => {
+    if (token && !currentAdminEmail) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const email = payload.email;
+        if (email) {
+          setCurrentAdminEmail(email);
+          if (isSuperAdmin(email)) {
+            console.log("✅ Super admin detected from JWT:", email);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to decode email from JWT token:", e);
+      }
+    }
+  }, [token, currentAdminEmail]);
+
+  // Fetch current admin info on mount (to get confirmed email from backend)
   useEffect(() => {
     async function fetchAdminInfo() {
       try {
         const res = await getAdminDashboard(token);
-        if (res.status === "success") {
+        if (res.status === "success" && res.admin_email) {
           setCurrentAdminEmail(res.admin_email);
+          // Debug: Log to verify super admin check
+          if (isSuperAdmin(res.admin_email)) {
+            console.log("✅ Super admin detected from API:", res.admin_email);
+          }
+        } else {
+          console.warn("Admin dashboard response missing admin_email:", res);
         }
       } catch (err) {
         console.error("Failed to fetch admin info", err);
@@ -269,7 +300,7 @@ export default function AdminDashboard({ token, onLogout }) {
           {/* Right: Actions */}
           <div className="flex items-center gap-3 pr-1">
             {/* --- NEW: Settings Dropdown (Only for Super Admins) --- */}
-            {SUPER_ADMINS.includes(currentAdminEmail) && (
+            {isSuperAdmin(currentAdminEmail) && (
               <div className="relative">
                 <button
                   onClick={() => setSettingsOpen(!settingsOpen)}
