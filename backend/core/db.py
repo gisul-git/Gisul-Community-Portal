@@ -23,7 +23,7 @@ connection_options = {
     "retryReads": True,
     "maxPoolSize": 50,
     "minPoolSize": 10,
-    "maxIdleTimeMS": 45000,  # Close idle connections after 45 seconds
+    "maxIdleTimeMS": 45000,  
     "heartbeatFrequencyMS": 10000,  # Check server status every 10 seconds
     "w": "majority",  # Write concern
     "readPreference": "primaryPreferred",  # Prefer primary, fallback to secondary
