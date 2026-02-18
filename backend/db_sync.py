@@ -18,6 +18,7 @@ else:
 
 db_name = os.getenv("MONGO_DB_NAME", "resume_app")
 
+# Build connection options - only set directConnection for non-SRV connections
 connection_options = {
     "serverSelectionTimeoutMS": 60000,  # Increased to 60 seconds for Atlas
     "connectTimeoutMS": 60000,  # Increased to 60 seconds
@@ -30,8 +31,12 @@ connection_options = {
     "heartbeatFrequencyMS": 10000,  # Check server status every 10 seconds
     "w": "majority",  # Write concern
     "readPreference": "primaryPreferred",  # Prefer primary, fallback to secondary
-    "directConnection": False,  # Use replica set connection
 }
+
+# Only set directConnection for non-SRV (standard) connections
+# SRV connections (mongodb+srv://) handle this automatically
+if mongo_uri and not mongo_uri.startswith("mongodb+srv://"):
+    connection_options["directConnection"] = False  # Use replica set connection for standard URIs
 
 def get_db_client():
     try:
