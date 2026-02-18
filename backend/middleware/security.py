@@ -361,9 +361,27 @@ class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         # Only redirect in production
-        if os.getenv("ENVIRONMENT") == "production" and request.url.scheme == "http":
-            https_url = request.url.replace(scheme="https")
-            return RedirectResponse(url=str(https_url), status_code=301)
+        if os.getenv("ENVIRONMENT") == "production":
+            # Check X-Forwarded-Proto header first (for proxied requests)
+            forwarded_proto = request.headers.get("X-Forwarded-Proto", "").lower()
+            # If behind a proxy, trust X-Forwarded-Proto header
+            # If direct connection, check request.url.scheme
+            is_http = (
+                forwarded_proto == "http" if forwarded_proto 
+                else request.url.scheme == "http"
+            )
+            
+            if is_http:
+                # Build HTTPS URL - use X-Forwarded-Host if available, otherwise use request host
+                forwarded_host = request.headers.get("X-Forwarded-Host") or request.headers.get("Host")
+                if forwarded_host:
+                    https_url = f"https://{forwarded_host}{request.url.path}"
+                    if request.url.query:
+                        https_url += f"?{request.url.query}"
+                    return RedirectResponse(url=https_url, status_code=301)
+                else:
+                    https_url = request.url.replace(scheme="https")
+                    return RedirectResponse(url=str(https_url), status_code=301)
         
         return await call_next(request)
 
