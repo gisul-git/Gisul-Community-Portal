@@ -86,6 +86,26 @@ export default function AdminDashboard({ token, onLogout }) {
   // Handler to add admin
   async function handleAddAdminSubmit(e) {
     e.preventDefault();
+    
+    // Validate form
+    if (!newAdminData.name || !newAdminData.email || !newAdminData.password) {
+      alert("❌ Please fill in all fields");
+      return;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newAdminData.email)) {
+      alert("❌ Please enter a valid email address");
+      return;
+    }
+    
+    // Password validation
+    if (newAdminData.password.length < 6) {
+      alert("❌ Password must be at least 6 characters long");
+      return;
+    }
+    
     setIsAddingAdmin(true);
     try {
       const res = await addAdmin(token, newAdminData);
@@ -94,10 +114,13 @@ export default function AdminDashboard({ token, onLogout }) {
         setIsAddAdminOpen(false);
         setNewAdminData({ name: "", email: "", password: "" }); // Reset form
       } else {
-        alert("❌ Failed: " + (res.detail || "Unknown error"));
+        alert("❌ Failed: " + (res.detail || res.message || "Unknown error"));
       }
     } catch (err) {
-      alert("Error adding admin: " + err.message);
+      // Show user-friendly error message
+      const errorMessage = err.message || "Failed to add admin. Please try again.";
+      alert("❌ Error: " + errorMessage);
+      console.error("Add admin error:", err);
     } finally {
       setIsAddingAdmin(false);
     }
