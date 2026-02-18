@@ -674,7 +674,7 @@ function RequirementsApproval({ token, onApproval }) {
         minute: "2-digit",
       });
     } catch (e) {
-      console.log(e)  
+      console.log(e);
       return dateString;
     }
   };
@@ -1673,8 +1673,8 @@ function TrainersList({ token }) {
         .filter((y) => y !== null && y !== undefined),
     ),
   ].sort((a, b) => a - b);
- 
-  console.log(experienceYears)
+
+  console.log(experienceYears);
   // Ensure component always renders something
   if (!token) {
     return (
@@ -2259,14 +2259,18 @@ function TrainersList({ token }) {
                                 )}
                               </td>
                               <td className="px-6 py-4 text-center">
-  {(trainer.min_commercial || trainer.max_commercial) ? (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-green-50 text-green-700 border border-green-100 whitespace-nowrap">
-      ₹{trainer.min_commercial || 0} - ₹{trainer.max_commercial || 0}
-    </span>
-  ) : (
-    <span className="text-gray-400 text-xs italic">N/A</span>
-  )}
-</td>
+                                {trainer.min_commercial ||
+                                trainer.max_commercial ? (
+                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-green-50 text-green-700 border border-green-100 whitespace-nowrap">
+                                    ₹{trainer.min_commercial || 0} - ₹
+                                    {trainer.max_commercial || 0}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 text-xs italic">
+                                    N/A
+                                  </span>
+                                )}
+                              </td>
                               <td className="px-6 py-4 text-right">
                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <button
@@ -2575,8 +2579,8 @@ function InlineAnalytics({ token }) {
     skill_category: "",
     location: "",
   });
-  const [chartType, setChartType] = useState("bar"); 
-  
+  const [chartType, setChartType] = useState("bar");
+
   // "bar" or "pie"
 
   // 👇 1. NEW STATE: Store availability data separately
@@ -2591,19 +2595,19 @@ function InlineAnalytics({ token }) {
         const activeFilters = {};
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== "") {
-             // Convert string boolean to actual boolean for API if needed
-             if (key === "is_available") {
-                activeFilters[key] = value === "true";
-             } else {
-                activeFilters[key] = value;
-             }
+            // Convert string boolean to actual boolean for API if needed
+            if (key === "is_available") {
+              activeFilters[key] = value === "true";
+            } else {
+              activeFilters[key] = value;
+            }
           }
         });
 
         // 2. Query specifically for availability, BUT pass the 'filters' object
-        const res = await analyticsQuery(token, { 
-            fields: ["is_available"], // We only want availability data for this widget
-            filters: activeFilters    // <--- THIS IS THE KEY CHANGE
+        const res = await analyticsQuery(token, {
+          fields: ["is_available"], // We only want availability data for this widget
+          filters: activeFilters, // <--- THIS IS THE KEY CHANGE
         });
 
         if (res && res.data) {
@@ -2836,18 +2840,24 @@ function InlineAnalytics({ token }) {
               <div className="h-48 w-full relative">
                 {availStats.length > 0 ? (
                   <Plot
-                    data={[{
-                      values: availStats.map(d => d.count),
-                      labels: availStats.map(d => d._id === true ? "Available" : "Busy"),
-                      type: 'pie',
-                      hole: 0.6, // Makes it a Donut chart
-                      marker: {
-                        colors: availStats.map(d => d._id === true ? '#22c55e' : '#94a3b8') // Green vs Gray
+                    data={[
+                      {
+                        values: availStats.map((d) => d.count),
+                        labels: availStats.map((d) =>
+                          d._id === true ? "Available" : "Busy",
+                        ),
+                        type: "pie",
+                        hole: 0.6, // Makes it a Donut chart
+                        marker: {
+                          colors: availStats.map((d) =>
+                            d._id === true ? "#22c55e" : "#94a3b8",
+                          ), // Green vs Gray
+                        },
+                        textinfo: "label+percent",
+                        textposition: "inside",
+                        showlegend: false,
                       },
-                      textinfo: 'label+percent',
-                      textposition: 'inside',
-                      showlegend: false
-                    }]}
+                    ]}
                     layout={{
                       margin: { l: 0, r: 0, t: 0, b: 0 },
                       height: 190,
@@ -2862,13 +2872,15 @@ function InlineAnalytics({ token }) {
                     Loading stats...
                   </div>
                 )}
-                
+
                 {/* Center Text (Total Count) */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
                   <span className="text-2xl font-bold text-gray-800">
                     {availStats.reduce((a, b) => a + (b.count || 0), 0)}
                   </span>
-                  <p className="text-[10px] text-gray-400 uppercase font-bold">Total</p>
+                  <p className="text-[10px] text-gray-400 uppercase font-bold">
+                    Total
+                  </p>
                 </div>
               </div>
 
@@ -2876,7 +2888,9 @@ function InlineAnalytics({ token }) {
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="flex items-center gap-2 bg-green-50 p-2 rounded-lg">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-xs font-bold text-green-700">Available</span>
+                  <span className="text-xs font-bold text-green-700">
+                    Available
+                  </span>
                 </div>
                 <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
                   <div className="w-2 h-2 rounded-full bg-gray-400"></div>
@@ -2944,43 +2958,54 @@ function InlineAnalytics({ token }) {
               </div>
 
               {/* Skill Category Filter */}
-<div className="mb-5">
-  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-    Skill Category
-  </label>
-  
-  <div className="relative group">
-    <select
-      value={filters.skill_category}
-      onChange={(e) => handleFilterChange("skill_category", e.target.value)}
-      className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl px-4 py-3 pr-10 shadow-sm outline-none transition-all duration-200 
+              <div className="mb-5">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  Skill Category
+                </label>
+
+                <div className="relative group">
+                  <select
+                    value={filters.skill_category}
+                    onChange={(e) =>
+                      handleFilterChange("skill_category", e.target.value)
+                    }
+                    className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl px-4 py-3 pr-10 shadow-sm outline-none transition-all duration-200 
       hover:border-purple-300 hover:shadow-md hover:shadow-purple-500/10 
       focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 
       cursor-pointer placeholder-gray-400"
-    >
-      <option value="">All Categories</option>
+                  >
+                    <option value="">All Categories</option>
 
-      {chartData.map((item, index) => {
-        const label = typeof item._id === "object"
-          ? JSON.stringify(item._id)
-          : String(item._id || "Unknown");
+                    {chartData.map((item, index) => {
+                      const label =
+                        typeof item._id === "object"
+                          ? JSON.stringify(item._id)
+                          : String(item._id || "Unknown");
 
-        return (
-          <option key={index} value={label} className="text-gray-900">
-            {label} {item.count ? `(${item.count})` : ''}
-          </option>
-        );
-      })}
-    </select>
-    
-    {/* Custom Arrow Icon */}
-    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 group-hover:text-purple-500 transition-colors duration-200">
-      <svg className="h-5 w-5 fill-current" viewBox="0 0 20 20">
-        <path fillRule="evenodd" clipRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-      </svg>
-    </div>
-  </div>
-</div>
+                      return (
+                        <option
+                          key={index}
+                          value={label}
+                          className="text-gray-900"
+                        >
+                          {label} {item.count ? `(${item.count})` : ""}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  {/* Custom Arrow Icon */}
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 group-hover:text-purple-500 transition-colors duration-200">
+                    <svg className="h-5 w-5 fill-current" viewBox="0 0 20 20">
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
 
               {/* Location Filter */}
               <div className="mb-8">

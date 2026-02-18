@@ -450,7 +450,7 @@ export default function TrainerDashboard({ token, onLogout }) {
             <img
               src={gisulLogo}
               alt="GISUL"
-              // CHANGED: Increased size to h-16 (mobile) / h-20 (desktop) for better visibility
+              // CHANGED: Increased size to h-16 (mobile) / h-20 (desktop) for better
               className="h-16 sm:h-20 w-auto object-contain transition-transform hover:scale-105"
             />
             <div className="hidden sm:flex flex-col justify-center">
