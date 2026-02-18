@@ -928,10 +928,22 @@ async def startup_initialization():
             store_reindex_version(REINDEX_VERSION)
             logging.info("✅ Incremental reindex completed (only missing profiles were indexed)")
         except Exception as e:
-            logging.error(f"❌ Reindex failed: {e}")
-            import traceback
-            logging.error(traceback.format_exc())
+            error_msg = str(e)
+            is_connection_error = "Connection refused" in error_msg or "timed out" in error_msg.lower() or "Errno 111" in error_msg
+            
+            if is_connection_error:
+                logging.warning(f"⚠️ Reindex skipped due to MongoDB connection issue: {error_msg[:200]}")
+                logging.warning("⚠️ The application will start, but reindexing will be retried on next startup")
+                logging.warning("⚠️ Please check:")
+                logging.warning("   1. MongoDB Atlas IP whitelist includes your server IP")
+                logging.warning("   2. Connection string format (should use mongodb+srv:// for Atlas)")
+                logging.warning("   3. Network connectivity from Docker container to MongoDB Atlas")
+            else:
+                logging.error(f"❌ Reindex failed: {e}")
+                import traceback
+                logging.error(traceback.format_exc())
             # Don't store version if reindex failed - will retry on next startup
+            # Application will continue to start even if reindex fails
         
         logging.info("🎉 Startup initialization completed successfully")
         
