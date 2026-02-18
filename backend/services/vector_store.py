@@ -1594,6 +1594,23 @@ def get_vector_store_ids() -> Set[str]:
     """
     return {entry.get("id") for entry in vector_store.values() if entry.get("id")}
 
+def get_indexed_profile_ids() -> Set[str]:
+    """
+    Return the set of profile IDs that are already indexed in the multi-vector store.
+    This helps avoid duplicate indexing.
+    """
+    global multi_vector_store
+    if not multi_vector_store:
+        return set()
+    
+    indexed_ids = set()
+    for chunk_data in multi_vector_store.values():
+        profile_id = chunk_data.get("profile_id")
+        if profile_id:
+            indexed_ids.add(profile_id)
+    
+    return indexed_ids
+
 
 def compute_vector_integrity() -> Dict[str, Any]:
     """
