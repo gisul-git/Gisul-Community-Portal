@@ -4240,12 +4240,35 @@ async def get_all_requirements(user=Depends(get_admin_user)):
 @app.get("/admin/requirements/pending_count")
 async def get_pending_requirements_count(user=Depends(get_admin_user)):
     """Get count of pending requirements for notification"""
-    try:
-        count = await customer_requirements.count_documents({"status": "pending"})
-        return {"pending_count": count}
-    except Exception as e:
-        logging.error(f"Error fetching pending count: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching pending count: {str(e)}")
+    import asyncio
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            count = await customer_requirements.count_documents({"status": "pending"})
+            return {"pending_count": count}
+        except Exception as e:
+            error_msg = str(e)
+            is_timeout = "timed out" in error_msg.lower() or "timeout" in error_msg.lower()
+            
+            if attempt < max_retries - 1 and is_timeout:
+                # Retry on timeout with exponential backoff
+                wait_time = retry_delay * (2 ** attempt)
+                logging.warning(f"⚠️ MongoDB timeout on attempt {attempt + 1}/{max_retries}, retrying in {wait_time}s...")
+                await asyncio.sleep(wait_time)
+                continue
+            else:
+                # Final attempt failed or non-timeout error
+                logging.error(f"Error fetching pending count: {e}")
+                # Return 0 instead of error to prevent UI issues
+                if is_timeout:
+                    logging.warning("⚠️ Returning default count (0) due to MongoDB timeout")
+                    return {"pending_count": 0}
+                raise HTTPException(status_code=500, detail=f"Error fetching pending count: {str(e)}")
+    
+    # Should not reach here, but return default if it does
+    return {"pending_count": 0}
 
 @app.get("/admin/dashboard")
 async def get_admin_dashboard(user=Depends(get_admin_user)):
