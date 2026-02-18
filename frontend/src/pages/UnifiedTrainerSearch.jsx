@@ -7,7 +7,7 @@ export default function UnifiedTrainerSearch({ token }) {
   const [parsedJD, setParsedJD] = useState(null);
   const [showJdResults, setShowJdResults] = useState(false);
   const [jdLoading, setJdLoading] = useState(false);
-  const [topK, setTopK] = useState(10);
+  const [topK, _setTopK] = useState(10);
   const [jdForm, setJdForm] = useState({
     domain: "",
     experienceYears: "",
@@ -297,30 +297,6 @@ export default function UnifiedTrainerSearch({ token }) {
           </div>
 
           {/* Integrated Config Card */}
-          <div className="bg-white px-8 py-4 rounded-3xl shadow-[0_10px_30px_rgba(105,83,163,0.05)] border border-purple-50 flex items-center gap-8">
-            <div className="flex flex-col">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Results Return</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={topK}
-                  onChange={(e) => setTopK(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
-                  className="w-16 p-2 bg-purple-50 text-[#6953a3] font-bold text-xl rounded-xl border-none focus:ring-2 focus:ring-[#6953a3] text-center"
-                />
-                <span className="text-xs font-bold text-gray-400">Profiles</span>
-              </div>
-            </div>
-            <div className="h-10 w-px bg-gray-100 hidden sm:block"></div>
-            <div className="flex flex-col items-center">
-              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Engine Status</label>
-              <div className="flex items-center gap-2">
-                <span className={`w-3 h-3 rounded-full ${isLoading ? 'bg-purple-500 animate-pulse' : 'bg-green-500'}`}></span>
-                <span className="text-sm font-bold text-gray-700 uppercase tracking-tighter">{isLoading ? 'Processing' : 'Active'}</span>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Action Panels */}

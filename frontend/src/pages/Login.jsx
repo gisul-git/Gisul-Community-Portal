@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { adminLogin, trainerLogin, customerLogin, API_BASE } from "../api";
 import gisulLogo from "../assets/gisul purple.webp";
 import authImage from "../assets/loginGraphics.png";
+import { motion } from "framer-motion";
+import { Sparkles, Hexagon } from "lucide-react";
 
-export default function Login({ onLogin, onSwitchToSignup }) {
+export default function Login({ onLogin, onSwitchToSignup }){
   // --- STATE VARIABLES (Untouched) ---
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,7 +15,6 @@ export default function Login({ onLogin, onSwitchToSignup }) {
   const [showPassword, setShowPassword] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
-
   // --- LOGIC (Untouched) ---
   async function handleSubmit(e) {
     e.preventDefault();
@@ -85,37 +86,71 @@ export default function Login({ onLogin, onSwitchToSignup }) {
       {/* CHANGED: h-full -> min-h-screen lg:h-full (Prevents crushing on mobile) */}
       <div className="container relative z-10 flex flex-col lg:flex-row w-full max-w-7xl min-h-screen lg:h-full items-center justify-center lg:justify-between px-4 lg:px-6 gap-6 lg:gap-16 py-10 lg:py-0">
         {/* --- LEFT SIDE: VISUALS --- */}
-        <div className="hidden lg:flex flex-col w-1/2 justify-center space-y-8 h-full">
-          {/* <img src={gisulLogo} alt="Logo" className="h-12 w-fit" /> */}
+        {/* --- LEFT SIDE: VISUALS --- */}
+        {/* --- LEFT SIDE: VISUALS (Welcome Back) --- */}
+        <div className="hidden lg:flex flex-col w-1/2 justify-center items-center h-full relative z-20">
+          
+          {/* Title Container */}
+          <div className="w-full flex flex-col items-center justify-center relative mb-8">
+            
+            {/* Animated Hexagon Icon */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "backOut" }}
+              className="relative mb-6 group"
+            >
+              
+            </motion.div>
 
-          <div className="space-y-4">
-            <h2 className="flex flex-col items-start leading-[0.8]">
-              {/* Line 1: Heavy, Industrial, Tight */}
-              <span className="text-5xl font-black text-slate-900 tracking-tighter uppercase">
-                Gisul
-              </span>
+            {/* Typography: Welcome Back */}
+            <div className="relative text-center">
+              <motion.h1 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="flex flex-col items-center leading-tight"
+              >
+                {/* 'Welcome' Gradient Text */}
+                <span className="relative inline-block text-6xl md:text-7xl font-black tracking-tighter">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-indigo-600 to-slate-900 bg-[length:200%_auto] animate-gradient-flow pb-2">
+                    Welcome
+                  </span>
+                  <Sparkles className="absolute top-0 -right-8 w-6 h-6 text-indigo-400 animate-pulse" />
+                </span>
+                
+                {/* 'Back' Text */}
+                <span className="text-5xl md:text-6xl text-slate-800 font-bold tracking-tight">
+                  Back
+                </span>
+              </motion.h1>
 
-              {/* Line 2: Elegant, Serif, Italic, Lowercase */}
-              {/* Use font-serif here. Ideally a nice font like Playfair Display */}
-              <span className="text-8xl font-serif italic font-light text-slate-400 ml-2 transform -translate-y-2">
-                community.
-              </span>
-            </h2>
-            <p className="text-lg text-slate-500 max-w-md leading-relaxed font-medium">
-              The professional hub for collaboration. Connect with Trainers and
-              Clients in one unified ecosystem.
-            </p>
+              {/* Tagline */}
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.8 }}
+                className="mt-5 text-sm font-bold tracking-[0.2em] uppercase text-slate-400"
+              >
+                Sign in to Continue
+              </motion.p>
+            </div>
+            
+            {/* Decorative Underline */}
+            <motion.div 
+               initial={{ width: 0, opacity: 0 }}
+               animate={{ width: "60px", opacity: 1 }}
+               transition={{ delay: 0.8, duration: 1 }}
+               className="h-1 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full mt-6"
+            />
           </div>
 
-          <div className="relative w-full max-w-lg max-h-[50vh] flex items-center justify-center">
-            {/* Yellowish Glow behind image */}
+          {/* Graphic/Image Section */}
+          <div className="relative w-full max-w-lg max-h-[45vh] flex items-center justify-center">
             <div className="absolute -inset-4 bg-gradient-to-tr from-purple-500/20 via-transparent to-amber-400/20 rounded-full blur-2xl"></div>
-
             <img
               src={authImage}
               alt="Portal Auth"
-              // Add 'mix-blend-mode-multiply' to your tailwind classes if you have that utility defined,
-              // or just use inline style for testing:
               style={{ mixBlendMode: "multiply" }}
               className="relative w-full h-full object-contain drop-shadow-2xl animate-float"
             />
@@ -308,6 +343,17 @@ export default function Login({ onLogin, onSwitchToSignup }) {
       </div>
 
       <style>{`
+        /* Add this NEW animation for the text gradient */
+        @keyframes gradient-flow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient-flow {
+          animation: gradient-flow 6s ease infinite;
+        }
+
+        /* Your EXISTING animations below... */
         @keyframes float {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-15px); }
