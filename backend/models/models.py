@@ -80,3 +80,28 @@ class RequirementApproval(BaseModel):
     requirement_id: str
     approved: bool
     admin_notes: Optional[str] = None
+
+class WhatsAppUser(BaseModel):
+    """WhatsApp user mapping for API access"""
+    phone_number: str  # Format: country code + number (e.g., "919876543210")
+    user_email: EmailStr
+    user_role: str  # "admin", "trainer", "customer"
+    permissions: List[str] = []  # ["bulk_upload", "search", "view_status"]
+    active: bool = True
+    registered_at: datetime = datetime.utcnow()
+    last_interaction: Optional[datetime] = None
+
+class WhatsAppUserCreate(BaseModel):
+    """Request model for creating WhatsApp user mapping"""
+    phone_number: str
+    user_email: EmailStr
+    permissions: List[str] = ["search"]  # Default permission
+
+class WhatsAppConversation(BaseModel):
+    """Track WhatsApp conversation context"""
+    phone_number: str
+    conversation_id: str  # Unique ID for 24-hour conversation window
+    context: Dict[str, Any] = {}  # Store conversation state (last query, task_id, etc.)
+    started_at: datetime = datetime.utcnow()
+    expires_at: datetime
+    message_count: int = 0
