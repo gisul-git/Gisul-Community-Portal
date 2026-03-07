@@ -11,7 +11,7 @@ services:
   # Nginx Reverse Proxy (handles SSL + routing)
   # ----------------------------------------------------------
   nginx:
-    image: nginx:alpine
+    image: mirror.gcr.io/library/nginx:alpine
     container_name: gisulmatch-nginx
     restart: always
     ports:
@@ -85,7 +85,7 @@ services:
   # Redis (Celery broker + result backend)
   # ----------------------------------------------------------
   redis:
-    image: redis:7-alpine
+    image: mirror.gcr.io/library/redis:7-alpine
     container_name: gisulmatch-redis
     restart: always
     expose:
