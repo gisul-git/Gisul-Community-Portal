@@ -13,9 +13,8 @@ from fastapi import APIRouter, Request, HTTPException, Depends, Header, UploadFi
 from fastapi.responses import PlainTextResponse, JSONResponse
 
 from services.whatsapp_service import whatsapp_service
-from core.db import get_db_client, db_name
+from core.db import client, db_name
 from models.models import WhatsAppUser, WhatsAppUserCreate
-from api.main import get_admin_user, log_activity, get_client_ip
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +22,16 @@ router = APIRouter(prefix="/whatsapp", tags=["WhatsApp"])
 
 # WhatsApp webhook verification token
 WHATSAPP_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "your_verify_token_12345")
+
+
+# ============================================================================
+# DEPENDENCY HELPERS (lazy imports to avoid circular dependency)
+# ============================================================================
+
+def get_admin_dependency():
+    """Lazy import of get_admin_user to avoid circular dependency"""
+    from api.main import get_admin_user
+    return get_admin_user
 
 
 # ============================================================================
@@ -293,6 +302,9 @@ async def handle_search_request(from_number: str, query: str, user_data: Dict):
     Calls the internal search endpoint and formats results
     """
     try:
+        # Lazy import to avoid circular dependency
+        from api.main import log_activity
+        
         await whatsapp_service.send_text_message(
             from_number,
             "🔍 Searching trainers..."
@@ -350,6 +362,9 @@ async def process_bulk_upload(from_number: str, filename: str, file_content: byt
     Calls the internal bulk upload endpoint
     """
     try:
+        # Lazy import to avoid circular dependency
+        from api.main import log_activity
+        
         # Import here to avoid circular dependency
         from tasks.tasks import bulk_import_task
         
@@ -486,7 +501,6 @@ async def send_help_menu(from_number: str, user_data: Dict):
 async def get_whatsapp_user(phone_number: str) -> Optional[Dict]:
     """Get WhatsApp user from database"""
     try:
-        client = get_db_client()
         db = client[db_name]
         collection = db["whatsapp_users"]
         
@@ -500,7 +514,6 @@ async def get_whatsapp_user(phone_number: str) -> Optional[Dict]:
 async def update_last_interaction(phone_number: str):
     """Update last interaction timestamp"""
     try:
-        client = get_db_client()
         db = client[db_name]
         collection = db["whatsapp_users"]
         
@@ -516,8 +529,12 @@ async def update_last_interaction(phone_number: str):
 # ADMIN ENDPOINTS FOR MANAGING WHATSAPP USERS
 # ============================================================================
 
+def _get_admin_dep():
+    """Wrapper to delay import until request time"""
+    return get_admin_dependency()
+
 @router.post("/users/register")
-async def register_whatsapp_user(user_data: WhatsAppUserCreate, admin=Depends(get_admin_user)):
+async def register_whatsapp_user(user_data: WhatsAppUserCreate, admin=Depends(_get_admin_dep)):
     """
     Register a WhatsApp number for API access (Admin only)
     
@@ -528,7 +545,6 @@ async def register_whatsapp_user(user_data: WhatsAppUserCreate, admin=Depends(ge
         Created user data
     """
     try:
-        client = get_db_client()
         db = client[db_name]
         collection = db["whatsapp_users"]
         
@@ -572,10 +588,9 @@ async def register_whatsapp_user(user_data: WhatsAppUserCreate, admin=Depends(ge
 
 
 @router.get("/users")
-async def list_whatsapp_users(admin=Depends(get_admin_user)):
+async def list_whatsapp_users(admin=Depends(_get_admin_dep)):
     """List all registered WhatsApp users (Admin only)"""
     try:
-        client = get_db_client()
         db = client[db_name]
         collection = db["whatsapp_users"]
         
@@ -593,10 +608,9 @@ async def list_whatsapp_users(admin=Depends(get_admin_user)):
 
 
 @router.delete("/users/{phone_number}")
-async def delete_whatsapp_user(phone_number: str, admin=Depends(get_admin_user)):
+async def delete_whatsapp_user(phone_number: str, admin=Depends(_get_admin_dep)):
     """Delete WhatsApp user registration (Admin only)"""
     try:
-        client = get_db_client()
         db = client[db_name]
         collection = db["whatsapp_users"]
         
@@ -617,10 +631,9 @@ async def delete_whatsapp_user(phone_number: str, admin=Depends(get_admin_user))
 
 
 @router.patch("/users/{phone_number}/toggle")
-async def toggle_whatsapp_user(phone_number: str, admin=Depends(get_admin_user)):
+async def toggle_whatsapp_user(phone_number: str, admin=Depends(_get_admin_dep)):
     """Toggle WhatsApp user active status (Admin only)"""
     try:
-        client = get_db_client()
         db = client[db_name]
         collection = db["whatsapp_users"]
         

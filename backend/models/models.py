@@ -5,7 +5,7 @@ from datetime import datetime
 class UserIn(BaseModel):
     email: EmailStr
     password: str
-    role: Optional[str] = None  # Optional - login endpoints determine role from database
+    role: Optional[str] = None 
 
 class TrainerSignup(BaseModel):
     email: EmailStr

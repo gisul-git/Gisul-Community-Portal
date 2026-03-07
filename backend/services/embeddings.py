@@ -16,10 +16,10 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Embedding model configuration
-# Default to OpenAI embeddings (most reliable and doesn't require local model downloads)
-EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")  # Default to OpenAI
+# Default to BGE embeddings (local model, no API costs)
+EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "BAAI/bge-large-en-v1.5")  # Default to BGE
 EMBEDDING_DIMENSION = None  # Will be set based on model
-USE_OPENAI_FALLBACK = os.getenv("USE_OPENAI_EMBEDDINGS", "true").lower() == "true"  # Default to true
+USE_OPENAI_FALLBACK = os.getenv("USE_OPENAI_EMBEDDINGS", "false").lower() == "true"  # Default to false
 
 # Cache configuration - Optimized for performance
 EMBEDDING_CACHE: Dict[str, Tuple[np.ndarray, datetime]] = {}
@@ -35,7 +35,7 @@ class EmbeddingService:
         Initialize embedding service.
         
         Args:
-            model_name: Model to use (text-embedding-3-small for OpenAI, or sentence-transformers models)
+            model_name: Model to use (BAAI/bge-large-en-v1.5 for BGE, text-embedding-3-small for OpenAI, or other sentence-transformers models)
         """
         self.model_name = model_name or EMBEDDING_MODEL_NAME
         self.model = None
@@ -46,36 +46,37 @@ class EmbeddingService:
     def _initialize_model(self):
         """Initialize the embedding model."""
         try:
-            if self.model_name.startswith("text-embedding") or USE_OPENAI_FALLBACK:
-                # Use OpenAI embeddings
+            if self.model_name.startswith("text-embedding"):
+                # Use OpenAI embeddings (only if explicitly requested)
                 from openai import OpenAI
                 api_key = os.getenv("OPENAI_API_KEY")
                 if not api_key:
                     raise ValueError("OPENAI_API_KEY not set")
                 self.client = OpenAI(api_key=api_key)
-                self.model_name = "text-embedding-3-small"  # Default OpenAI model
                 self.dimension = 1536
                 logger.info(f"✅ Initialized OpenAI embedding model: {self.model_name} ({self.dimension}D)")
             else:
-                # Use sentence-transformers for local models (FlagEmbedding removed)
+                # Use sentence-transformers for local models (BGE, etc.)
                 try:
-                    # Use sentence-transformers for other models
                     from sentence_transformers import SentenceTransformer
                     logger.info(f"🔄 Loading SentenceTransformer model: {self.model_name}")
                     self.model = SentenceTransformer(self.model_name)
                     self.dimension = self.model.get_sentence_embedding_dimension()
                     logger.info(f"✅ Loaded SentenceTransformer model: {self.model_name} ({self.dimension}D)")
                 except (ImportError, ValueError, ModuleNotFoundError) as e:
-                    # Fallback to OpenAI if local models not available
-                    logger.info(f"ℹ️ Local embedding model not available, using OpenAI embeddings")
-                    from openai import OpenAI
-                    api_key = os.getenv("OPENAI_API_KEY")
-                    if not api_key:
-                        raise ValueError("OPENAI_API_KEY not set and embedding libraries unavailable")
-                    self.client = OpenAI(api_key=api_key)
-                    self.model_name = "text-embedding-3-small"
-                    self.dimension = 1536
-                    self.model = None
+                    # Fallback to OpenAI only if USE_OPENAI_FALLBACK is true
+                    if USE_OPENAI_FALLBACK:
+                        logger.info(f"ℹ️ Local embedding model not available, using OpenAI embeddings")
+                        from openai import OpenAI
+                        api_key = os.getenv("OPENAI_API_KEY")
+                        if not api_key:
+                            raise ValueError("OPENAI_API_KEY not set and embedding libraries unavailable")
+                        self.client = OpenAI(api_key=api_key)
+                        self.model_name = "text-embedding-3-small"
+                        self.dimension = 1536
+                        self.model = None
+                    else:
+                        raise ValueError(f"Failed to load local model {self.model_name} and OpenAI fallback is disabled: {e}")
         except Exception as e:
             logger.error(f"❌ Failed to initialize embedding model: {e}")
             raise
