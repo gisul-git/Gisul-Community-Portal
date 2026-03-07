@@ -11,20 +11,26 @@ from collections import defaultdict
 import faiss
 import numpy as np
 from dotenv import load_dotenv
-from openai import OpenAI
 
 from db_sync import get_db_client, db_name
 
 load_dotenv()
 
-openai_api_key = os.getenv("OPENAI_API_KEY")
-if not openai_api_key or openai_api_key.startswith("sk-xxxxx") or len(openai_api_key) < 20:
-    print("⚠️  WARNING: OPENAI_API_KEY is not set or appears to be a placeholder!")
-    print("   Please set OPENAI_API_KEY in your .env file or environment variables.")
-    print("   Get your API key from: https://platform.openai.com/account/api-keys")
-    print("   Example .env file location: backend/.env or project root .env")
+# Lazy-loaded OpenAI client for LLM calls (not embeddings)
+_openai_client = None
 
-client = OpenAI(api_key=openai_api_key)
+def get_openai_client():
+    """Get OpenAI client for LLM calls (lazy initialization)"""
+    global _openai_client
+    if _openai_client is None:
+        from openai import OpenAI
+        api_key = os.getenv("OPENAI_API_KEY")
+        if api_key and not api_key.startswith("sk-xxxxx") and len(api_key) >= 20:
+            _openai_client = OpenAI(api_key=api_key)
+        else:
+            logging.warning("⚠️ OpenAI API key not configured. LLM features (query expansion, skill extraction) will be disabled.")
+            _openai_client = None
+    return _openai_client
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 FAISS_INDEX_PATH = DATA_DIR / "faiss_index.bin"
@@ -32,13 +38,14 @@ VECTOR_STORE_PATH = DATA_DIR / "vector_store.pkl"
 
 DATA_DIR.mkdir(exist_ok=True)
 
-EMBEDDING_MODEL = "text-embedding-3-small"
-EMBEDDING_DIMENSION = 1536
+# Embedding configuration - now using BGE model
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "BAAI/bge-large-en-v1.5")
+EMBEDDING_DIMENSION = 1024  # BGE large model dimension
 MAX_CACHE_ENTRIES = 500
 CACHE_TTL_DAYS = 7
 
 print("🧠 FAISS mode active (local vector search).")
-logging.warning(f"✅ Using OpenAI {EMBEDDING_MODEL} ({EMBEDDING_DIMENSION} dimensions)")
+logging.warning(f"✅ Using {EMBEDDING_MODEL} ({EMBEDDING_DIMENSION} dimensions)")
 
 # Strategy 5: Use IndexHNSW for faster approximate search (10-100x faster for large datasets)
 # Falls back to IndexFlatIP if dataset is small (<1000 vectors)
@@ -288,6 +295,11 @@ def extract_skills_from_query(query: str) -> List[str]:
     
     Skills (comma-separated, lowercase):
     """
+    
+    client = get_openai_client()
+    if not client:
+        # Fallback: return query as-is if OpenAI not available
+        return [query.lower()]
     
     try:
         response = client.chat.completions.create(
@@ -561,6 +573,11 @@ def expand_skills(skills: List[str], min_terms: int = 8, max_terms: int = 12) ->
     Provide only a comma-separated list of skills (lowercase), no explanations:
     """
     
+    client = get_openai_client()
+    if not client:
+        # Fallback: return original skills if OpenAI not available
+        return skills
+    
     expanded = []
     try:
         response = client.chat.completions.create(
@@ -666,6 +683,12 @@ def expand_query_with_llm(query: str, min_terms: int = 8, max_terms: int = 12) -
     
     Provide only the comma-separated list, no explanations:
     """
+    
+    client = get_openai_client()
+    if not client:
+        # Fallback: return original query if OpenAI not available
+        return [query.lower()]
+    
     terms: List[str] = []
     try:
         response = client.chat.completions.create(
@@ -740,6 +763,12 @@ def expand_text_context(text: str) -> str:
 
     Expanded query (add related terms, technologies, domains, and synonyms dynamically):
     """
+    
+    client = get_openai_client()
+    if not client:
+        # Fallback: return original text if OpenAI not available
+        return text
+    
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -943,6 +972,8 @@ def generate_embedding(text: str, use_cache: bool = True, use_expansion: bool = 
         use_cache: Whether to use cached embeddings
         use_expansion: Whether to expand context for better matching (improves scores from 50-60 to 90-100)
     """
+    from services.embeddings import get_embedding_service
+    
     try:
         # Strategy 7: Check cache first
         if use_cache:
@@ -953,10 +984,9 @@ def generate_embedding(text: str, use_cache: bool = True, use_expansion: bool = 
         # Step 1: Expand text context for better semantic matching (backward-compatible path)
         expanded = expand_text_context(text) if use_expansion else text
         
-        # Step 2: Generate embedding from expanded text
-        response = client.embeddings.create(model=EMBEDDING_MODEL, input=[expanded])
-        embedding = response.data[0].embedding
-        embedding_vector = normalize_vector(np.array(embedding, dtype=np.float32))
+        # Step 2: Generate embedding using embedding service
+        embedding_service = get_embedding_service()
+        embedding_vector = embedding_service.embed_single(expanded, normalize=True, use_cache=False)
         
         # Cache the embedding
         if use_cache:
@@ -965,10 +995,8 @@ def generate_embedding(text: str, use_cache: bool = True, use_expansion: bool = 
         return embedding_vector
     except Exception as e:
         error_msg = str(e)
-        if "api_key" in error_msg.lower() or "401" in error_msg or "invalid" in error_msg.lower():
-            logging.error(f"❌ OpenAI API key error: {error_msg}")
-            raise ValueError(f"OpenAI API key error: {error_msg}. Please check your OPENAI_API_KEY environment variable.")
-        raise
+        logging.error(f"❌ Embedding generation error: {error_msg}")
+        raise ValueError(f"Embedding generation error: {error_msg}")
 
 
 def rescale_score(distance: float) -> float:
@@ -1411,14 +1439,16 @@ def generate_single_embedding(text: str) -> np.ndarray:
     Generate ONE normalized embedding for a single text (no expansion).
     Uses cache if available.
     """
+    from services.embeddings import get_embedding_service
+    
     # Check cache first
     cached = get_cached_embedding(text)
     if cached is not None:
         return cached
     
-    response = client.embeddings.create(model=EMBEDDING_MODEL, input=[text])
-    embedding = response.data[0].embedding
-    embedding_array = normalize_vector(np.array(embedding, dtype=np.float32))
+    # Use embedding service instead of OpenAI client
+    embedding_service = get_embedding_service()
+    embedding_array = embedding_service.embed_single(text, normalize=True, use_cache=False)
     
     # Cache the result
     cache_embedding(text, embedding_array)
@@ -1427,7 +1457,7 @@ def generate_single_embedding(text: str) -> np.ndarray:
 
 def generate_embeddings_batch(texts: List[str]) -> List[np.ndarray]:
     """
-    Generate embeddings for multiple texts in ONE batch API call.
+    Generate embeddings for multiple texts in ONE batch call.
     Uses cache for individual texts, only generates embeddings for cache misses.
     
     Args:
@@ -1436,6 +1466,8 @@ def generate_embeddings_batch(texts: List[str]) -> List[np.ndarray]:
     Returns:
         List of normalized embedding vectors (same order as input texts)
     """
+    from services.embeddings import get_embedding_service
+    
     if not texts:
         return []
     
@@ -1458,29 +1490,25 @@ def generate_embeddings_batch(texts: List[str]) -> List[np.ndarray]:
     if cache_misses > 0:
         logging.info(f"🔄 Batch embedding: {cache_misses}/{len(texts)} cache misses, generating...")
     
-    # Generate embeddings for cache misses in one batch call
+    # Generate embeddings for cache misses using embedding service
     new_embeddings: Dict[int, np.ndarray] = {}
     if texts_to_embed:
         try:
-            # Extract just the text strings for batch API call
+            # Extract just the text strings for batch call
             texts_list = [text for _, text in texts_to_embed]
             
-            # Single batch API call
-            response = client.embeddings.create(
-                model=EMBEDDING_MODEL,
-                input=texts_list
-            )
+            # Use embedding service for batch generation
+            embedding_service = get_embedding_service()
+            embeddings_array = embedding_service.embed(texts_list, normalize=True, use_cache=False)
             
             # Process results and cache them
-            for (idx, text), embedding_data in zip(texts_to_embed, response.data):
-                embedding = embedding_data.embedding
-                embedding_array = normalize_vector(np.array(embedding, dtype=np.float32))
+            for (idx, text), embedding_array in zip(texts_to_embed, embeddings_array):
                 new_embeddings[idx] = embedding_array
                 
                 # Cache each embedding individually
                 cache_embedding(text, embedding_array)
             
-            logging.info(f"✅ Batch embedding: Generated {len(new_embeddings)} embeddings in 1 API call")
+            logging.info(f"✅ Batch embedding: Generated {len(new_embeddings)} embeddings")
         except Exception as e:
             logging.error(f"❌ Batch embedding failed: {e}")
             # Fallback: generate individually (slower but more reliable)
@@ -1980,6 +2008,12 @@ def generate_explanation(jd_text: str, resume_text: str) -> str:
 
     Explain in 2 sentences why this resume is a good semantic match for the job description.
     """
+    
+    client = get_openai_client()
+    if not client:
+        # Fallback: return generic message if OpenAI not available
+        return "This resume matches the job requirements based on semantic similarity."
+    
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -3095,7 +3129,7 @@ def query_multi_vector(
             embedding_service = get_embedding_service()
             query_embedding = embedding_service.embed_single(text, normalize=True, use_cache=True)
         except:
-            query_embedding = np.zeros(1536, dtype=np.float32)
+            query_embedding = np.zeros(EMBEDDING_DIMENSION, dtype=np.float32)
         return query_embedding, []
     
     # STEP 3: Perform multi-vector search with filters applied
@@ -3114,7 +3148,7 @@ def query_multi_vector(
         embedding_service = get_embedding_service()
         query_embedding = embedding_service.embed_single(text, normalize=True, use_cache=True)
     except:
-        query_embedding = np.zeros(1536, dtype=np.float32)  # Fallback
+        query_embedding = np.zeros(EMBEDDING_DIMENSION, dtype=np.float32)  # Fallback
     
     return query_embedding, results[:top_k]
 

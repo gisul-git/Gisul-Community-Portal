@@ -5,7 +5,7 @@ from datetime import datetime
 class UserIn(BaseModel):
     email: EmailStr
     password: str
-    role: Optional[str] = None  # Optional - login endpoints determine role from database
+    role: Optional[str] = None 
 
 class TrainerSignup(BaseModel):
     email: EmailStr
@@ -83,7 +83,7 @@ class RequirementApproval(BaseModel):
 
 class WhatsAppUser(BaseModel):
     """WhatsApp user mapping for API access"""
-    phone_number: str  # Format: country code + number (e.g., "919876543210")
+    phone_number: str  
     user_email: EmailStr
     user_role: str  # "admin", "trainer", "customer"
     permissions: List[str] = []  # ["bulk_upload", "search", "view_status"]
