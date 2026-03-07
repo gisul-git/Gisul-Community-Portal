@@ -31,3 +31,5 @@ authlib
 httpx
 sentence-transformers
 torch
+requests
+cryptography

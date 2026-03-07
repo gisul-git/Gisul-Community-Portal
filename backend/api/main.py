@@ -17,6 +17,7 @@ from services.parse_service import parse_resume_text, parse_jd_text
 from core.utils import decode_jwt
 from api.auth import router as auth_router
 from api.analytics import router as analytics_router
+from api.whatsapp import router as whatsapp_router
 from services.vector_store import (
     query_vector,
     get_cached_jd_results,
@@ -955,6 +956,7 @@ async def startup_initialization():
 
 app.include_router(auth_router)
 app.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
+app.include_router(whatsapp_router)
 
 def get_user(authorization: str = Header(None)):
     if not authorization:

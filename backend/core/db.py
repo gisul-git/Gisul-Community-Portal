@@ -15,7 +15,7 @@ default_mongo_uri = "mongodb://mongo:27017"  # Docker service name
 mongo_uri = os.getenv("MONGO_URI", default_mongo_uri)
 db_name = os.getenv("MONGO_DB_NAME", "resume_app")
 
-# Build connection options - only set directConnection for non-SRV connections
+
 connection_options = {
     "serverSelectionTimeoutMS": 60000,  # Increased to 60 seconds for Atlas
     "connectTimeoutMS": 60000,  # Increased to 60 seconds
