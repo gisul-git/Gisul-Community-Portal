@@ -21,8 +21,7 @@ import {
 } from "../api";
 import gisulLogo from "../assets/gisul final logo yellow-01 2.webp";
 
-const SUPER_ADMINS = ["team@gisul.co.in", "super@gisul.com"];
-
+const SUPER_ADMINS = ["team@gisul.co.in", "shaveta.goyal@gisul.co.in", "sahil.goyal@gisul.co.in"];
 export default function AdminDashboard({ token, onLogout }) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
