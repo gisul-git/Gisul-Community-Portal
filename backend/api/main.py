@@ -442,6 +442,12 @@ def extract_email_fallback(text: str) -> str | None:
 
 app = FastAPI()
 
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring and load balancers"""
+    return {"status": "ready to launch", "message": "Backend is healthy and ready"}
+
 # Security middleware - add before CORS
 # HTTPS redirect (only in production)
 if os.getenv("ENVIRONMENT") == "production":
