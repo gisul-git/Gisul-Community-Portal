@@ -237,6 +237,10 @@ jobs:
             FRONTEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest"
             CELERY_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-celery:latest"
             
+            # Fix Docker credential storage issue on Windows VM
+            mkdir -p ~/.docker
+            echo '{"credsStore":""}' > ~/.docker/config.json
+            
             # Login to GHCR (using GitHub token from secrets)
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
             
