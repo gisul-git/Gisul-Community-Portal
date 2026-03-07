@@ -242,8 +242,8 @@ jobs:
             docker image prune -af --filter "until=168h" || true
 
             # Give containers time to initialize
-            echo "⏳ Waiting 20s for services to initialize..."
-            sleep 20
+            echo "⏳ Waiting 45s for services to initialize..."
+            sleep 45
 
             echo "=== Container Status ==="
             docker compose ps
@@ -268,8 +268,8 @@ jobs:
       # ----------------------------------------------------------
       - name: Health check
         run: |
-          echo "⏳ Waiting 15s before external health check..."
-          sleep 15
+          echo "⏳ Waiting 60s for backend to fully initialize..."
+          sleep 60
           response=$(curl -s -o /dev/null -w "%{http_code}" https://community.gisul.co.in/health || echo "000")
           echo "Health check HTTP status: $response"
           if [ "$response" = "200" ]; then
