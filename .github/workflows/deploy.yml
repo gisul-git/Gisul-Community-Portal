@@ -237,6 +237,10 @@ jobs:
             echo "🚀 Starting all services..."
             docker compose up -d
 
+            # Clean up old/unused images to save disk space
+            echo "🧹 Cleaning up old images..."
+            docker image prune -af --filter "until=168h" || true
+
             # Give containers time to initialize
             echo "⏳ Waiting 20s for services to initialize..."
             sleep 20
