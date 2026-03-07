@@ -501,8 +501,13 @@ async def send_help_menu(from_number: str, user_data: Dict):
 async def get_whatsapp_user(phone_number: str) -> Optional[Dict]:
     """Get WhatsApp user from database"""
     try:
+<<<<<<< HEAD
         db = client[db_name]
         collection = db["whatsapp_users"]
+=======
+        whatsapp_db = client[db_name]
+        collection = whatsapp_db["whatsapp_users"]
+>>>>>>> dev
         
         user = await collection.find_one({"phone_number": phone_number})
         return user
@@ -514,8 +519,13 @@ async def get_whatsapp_user(phone_number: str) -> Optional[Dict]:
 async def update_last_interaction(phone_number: str):
     """Update last interaction timestamp"""
     try:
+<<<<<<< HEAD
         db = client[db_name]
         collection = db["whatsapp_users"]
+=======
+        whatsapp_db = client[db_name]
+        collection = whatsapp_db["whatsapp_users"]
+>>>>>>> dev
         
         await collection.update_one(
             {"phone_number": phone_number},
@@ -545,8 +555,13 @@ async def register_whatsapp_user(user_data: WhatsAppUserCreate, admin=Depends(_g
         Created user data
     """
     try:
+<<<<<<< HEAD
         db = client[db_name]
         collection = db["whatsapp_users"]
+=======
+        whatsapp_db = client[db_name]
+        collection = whatsapp_db["whatsapp_users"]
+>>>>>>> dev
         
         # Check if phone number already registered
         existing = await collection.find_one({"phone_number": user_data.phone_number})
@@ -554,7 +569,7 @@ async def register_whatsapp_user(user_data: WhatsAppUserCreate, admin=Depends(_g
             raise HTTPException(status_code=400, detail="Phone number already registered")
         
         # Check if email exists in users collection
-        users_collection = db["users"]
+        users_collection = whatsapp_db["users"]
         user = await users_collection.find_one({"email": user_data.user_email})
         if not user:
             raise HTTPException(status_code=404, detail="User email not found")
@@ -591,8 +606,13 @@ async def register_whatsapp_user(user_data: WhatsAppUserCreate, admin=Depends(_g
 async def list_whatsapp_users(admin=Depends(_get_admin_dep)):
     """List all registered WhatsApp users (Admin only)"""
     try:
+<<<<<<< HEAD
         db = client[db_name]
         collection = db["whatsapp_users"]
+=======
+        whatsapp_db = client[db_name]
+        collection = whatsapp_db["whatsapp_users"]
+>>>>>>> dev
         
         users = await collection.find({}).to_list(length=None)
         
@@ -611,8 +631,13 @@ async def list_whatsapp_users(admin=Depends(_get_admin_dep)):
 async def delete_whatsapp_user(phone_number: str, admin=Depends(_get_admin_dep)):
     """Delete WhatsApp user registration (Admin only)"""
     try:
+<<<<<<< HEAD
         db = client[db_name]
         collection = db["whatsapp_users"]
+=======
+        whatsapp_db = client[db_name]
+        collection = whatsapp_db["whatsapp_users"]
+>>>>>>> dev
         
         result = await collection.delete_one({"phone_number": phone_number})
         
@@ -634,8 +659,13 @@ async def delete_whatsapp_user(phone_number: str, admin=Depends(_get_admin_dep))
 async def toggle_whatsapp_user(phone_number: str, admin=Depends(_get_admin_dep)):
     """Toggle WhatsApp user active status (Admin only)"""
     try:
+<<<<<<< HEAD
         db = client[db_name]
         collection = db["whatsapp_users"]
+=======
+        whatsapp_db = client[db_name]
+        collection = whatsapp_db["whatsapp_users"]
+>>>>>>> dev
         
         user = await collection.find_one({"phone_number": phone_number})
         if not user:

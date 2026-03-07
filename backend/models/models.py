@@ -83,7 +83,7 @@ class RequirementApproval(BaseModel):
 
 class WhatsAppUser(BaseModel):
     """WhatsApp user mapping for API access"""
-    phone_number: str  # Format: country code + number (e.g., "919876543210")
+    phone_number: str  
     user_email: EmailStr
     user_role: str  # "admin", "trainer", "customer"
     permissions: List[str] = []  # ["bulk_upload", "search", "view_status"]
