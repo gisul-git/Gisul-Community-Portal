@@ -1,16 +1,35 @@
 version: "3.9"
 
-# Production docker-compose.yml
-# Uses pre-built images from GitHub Container Registry instead of building locally
-# This file is used by the CI/CD pipeline
+# Production docker-compose.prod.yml
+# Nginx runs as a container — no host nginx needed
+# Frontend container serves static files via its own internal nginx
+# Root nginx.conf routes API prefixes to backend, everything else to frontend
 
 services:
-  # -----------------------------------------------------------
-  # Backend (FastAPI)
-  # -----------------------------------------------------------
+
+  # ----------------------------------------------------------
+  # Nginx Reverse Proxy (handles SSL + routing)
+  # ----------------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: gisulmatch-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - gisulmatch_net
+
+  # ----------------------------------------------------------
+  # Backend (FastAPI — uvicorn on port 8000)
+  # ----------------------------------------------------------
   backend:
-    # Image will be set by CI/CD workflow
-    # Format: ghcr.io/OWNER/gisul-community-backend:latest
     image: ghcr.io/REPLACE_WITH_OWNER/gisul-community-backend:latest
     container_name: gisulmatch-backend
     restart: always
@@ -27,11 +46,10 @@ services:
     networks:
       - gisulmatch_net
 
-  # -----------------------------------------------------------
+  # ----------------------------------------------------------
   # Celery Worker
-  # -----------------------------------------------------------
+  # ----------------------------------------------------------
   worker:
-    # Image will be set by CI/CD workflow
     image: ghcr.io/REPLACE_WITH_OWNER/gisul-community-celery:latest
     container_name: gisulmatch-worker
     restart: always
@@ -49,25 +67,23 @@ services:
     networks:
       - gisulmatch_net
 
-  # -----------------------------------------------------------
-  # Frontend (React + Vite)
-  # -----------------------------------------------------------
+  # ----------------------------------------------------------
+  # Frontend (React build served by nginx:stable-alpine on port 80)
+  # ----------------------------------------------------------
   frontend:
-    # Image will be set by CI/CD workflow
     image: ghcr.io/REPLACE_WITH_OWNER/gisul-community-frontend:latest
     container_name: gisulmatch-frontend
     restart: always
-    # Expose port to host for VM nginx to access
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
     depends_on:
       - backend
     networks:
       - gisulmatch_net
 
-  # -----------------------------------------------------------
-  # Redis (Celery Broker)
-  # -----------------------------------------------------------
+  # ----------------------------------------------------------
+  # Redis (Celery broker + result backend)
+  # ----------------------------------------------------------
   redis:
     image: redis:7-alpine
     container_name: gisulmatch-redis
@@ -79,23 +95,12 @@ services:
     networks:
       - gisulmatch_net
 
-  # -----------------------------------------------------------
-  # MongoDB: Using MongoDB Atlas (configured via MONGO_URI in .env)
-  # No local MongoDB container needed
-  # -----------------------------------------------------------
-
-# -----------------------------------------------------------
-# Shared Network and Volumes
-# -----------------------------------------------------------
 networks:
   gisulmatch_net:
     driver: bridge
 
 volumes:
-  # Named volumes - persist data even when containers are removed
-  # Data is stored in Docker's volume directory (survives docker-compose down)
   redis_data:
     driver: local
   faiss_data:
     driver: local
-
