@@ -17,7 +17,7 @@ from services.parse_service import parse_resume_text, parse_jd_text
 from core.utils import decode_jwt
 from api.auth import router as auth_router
 from api.analytics import router as analytics_router
-from api.whatsapp import router as whatsapp_router
+# Note: whatsapp router imported later to avoid circular import
 from services.vector_store import (
     query_vector,
     get_cached_jd_results,
@@ -956,7 +956,6 @@ async def startup_initialization():
 
 app.include_router(auth_router)
 app.include_router(analytics_router, prefix="/analytics", tags=["analytics"])
-app.include_router(whatsapp_router)
 
 def get_user(authorization: str = Header(None)):
     if not authorization:
@@ -1026,6 +1025,10 @@ def get_client_ip(request) -> Optional[str]:
     except Exception:
         pass
     return None
+
+# Import whatsapp router after helper functions are defined (avoids circular import)
+from api.whatsapp import router as whatsapp_router
+app.include_router(whatsapp_router)
 
 @app.post("/admin/bulk_upload_start")
 async def bulk_upload(files: list[UploadFile] = File(...), http_request: Request = None, user=Depends(get_admin_user)):
