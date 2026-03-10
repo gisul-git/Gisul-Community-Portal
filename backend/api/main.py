@@ -17,6 +17,7 @@ from services.parse_service import parse_resume_text, parse_jd_text
 from core.utils import decode_jwt
 from api.auth import router as auth_router
 from api.analytics import router as analytics_router
+# Note: whatsapp router imported later to avoid circular import
 from services.vector_store import (
     query_vector,
     get_cached_jd_results,
@@ -26,6 +27,7 @@ from services.vector_store import (
     clear_embedding_cache,
     clear_all_caches,
     get_vector_store_ids,
+    get_indexed_profile_ids,
     expand_query_with_llm,
     compute_vector_integrity,
     repair_vector_index,
@@ -582,9 +584,111 @@ def should_run_reindex() -> bool:
     logging.info(f"✅ Reindex version matches ({REINDEX_VERSION}), skipping reindex")
     return False
 
+def generate_raw_text_from_profile(profile: Dict[str, Any]) -> str:
+    """
+    Generate raw_text from profile fields if raw_text is missing or too short.
+    This allows manually added profiles to be indexed even without raw_text.
+    """
+    parts = []
+    
+    # Helper to format list fields
+    def format_list_field(field_value) -> str:
+        if not field_value:
+            return ""
+        if isinstance(field_value, str):
+            return field_value
+        if isinstance(field_value, list):
+            if not field_value:
+                return ""
+            formatted_items = []
+            for item in field_value:
+                if isinstance(item, str):
+                    formatted_items.append(item)
+                elif isinstance(item, dict):
+                    item_parts = []
+                    if item.get("degree"):
+                        item_parts.append(f"Degree: {item['degree']}")
+                    if item.get("institution"):
+                        item_parts.append(f"Institution: {item['institution']}")
+                    if item.get("duration"):
+                        item_parts.append(f"Duration: {item['duration']}")
+                    if item.get("CGPA"):
+                        item_parts.append(f"CGPA: {item['CGPA']}")
+                    formatted_items.append(", ".join(item_parts) if item_parts else str(item))
+                else:
+                    formatted_items.append(str(item))
+            return ", ".join(formatted_items)
+        return str(field_value)
+    
+    # Add name
+    name = profile.get("name", "")
+    if name:
+        parts.append(f"Name: {name}")
+    
+    # Add email
+    email = profile.get("email", "")
+    if email:
+        parts.append(f"Email: {email}")
+    
+    # Add skills
+    skills = profile.get("skills", [])
+    if skills:
+        parts.append("Skills: " + format_list_field(skills))
+    
+    # Add skill domains
+    skill_domains = profile.get("skill_domains", [])
+    if skill_domains:
+        parts.append("Skill Domains: " + format_list_field(skill_domains))
+    
+    # Add companies
+    companies = profile.get("companies", [])
+    if companies:
+        parts.append("Companies: " + format_list_field(companies))
+    
+    # Add current company
+    current_company = profile.get("current_company", "")
+    if current_company:
+        parts.append(f"Current Company: {current_company}")
+    
+    # Add clients
+    clients = profile.get("clients", [])
+    if clients:
+        parts.append("Clients: " + format_list_field(clients))
+    
+    # Add education
+    education = profile.get("education", [])
+    if education:
+        parts.append("Education: " + format_list_field(education))
+    
+    # Add certifications
+    certifications = profile.get("certifications", [])
+    if certifications:
+        parts.append("Certifications: " + format_list_field(certifications))
+    
+    # Add location
+    location = profile.get("location", "")
+    if location:
+        parts.append(f"Location: {location}")
+    
+    # Add experience years
+    experience_years = profile.get("experience_years")
+    if experience_years is not None:
+        parts.append(f"Experience: {experience_years} years")
+    
+    # Add phone
+    phone = profile.get("phone", "")
+    if phone:
+        parts.append(f"Phone: {phone}")
+    
+    # Combine all parts
+    generated_text = " ".join(parts)
+    return generated_text.strip()
+
+
 async def reindex_all_profiles_multi_vector():
     """
     Reindex all profiles with multi-vector chunks.
+    Enhanced to handle manually added profiles without raw_text or profile_id.
     Runs only once per deployment unless version changes.
     """
     try:
@@ -613,28 +717,71 @@ async def reindex_all_profiles_multi_vector():
         
         logging.info(f"📊 Found {total_profiles} profiles to reindex")
         
+        # Get already indexed profile IDs to avoid duplicate indexing
+        indexed_profile_ids = get_indexed_profile_ids()
+        logging.info(f"📋 Found {len(indexed_profile_ids)} profiles already indexed, will skip duplicates")
+        
         # Reindex each profile
         success_count = 0
+        skipped_count = 0
         error_count = 0
         error_details = []
+        profiles_updated = 0  # Track profiles we update in MongoDB
         
         for idx, profile in enumerate(profiles, 1):
+            # Generate or use existing profile_id
             profile_id = profile.get("profile_id")
             if not profile_id:
-                logging.warning(f"⚠️ Profile {idx}/{total_profiles}: Missing profile_id, skipping")
-                error_count += 1
-                error_details.append(f"Profile {idx}: Missing profile_id")
+                # Try to generate profile_id from email or _id
+                email = profile.get("email", "")
+                if email:
+                    profile_id = email  # Use email as profile_id fallback
+                else:
+                    # Use _id as last resort
+                    profile_id = str(profile.get("_id", f"profile_{idx}"))
+                
+                # Update profile in MongoDB with generated profile_id
+                try:
+                    await trainer_profiles.update_one(
+                        {"_id": profile.get("_id")},
+                        {"$set": {"profile_id": profile_id}}
+                    )
+                    profiles_updated += 1
+                    logging.info(f"✅ Generated profile_id '{profile_id}' for profile {idx}")
+                except Exception as e:
+                    logging.warning(f"⚠️ Failed to update profile_id for profile {idx}: {e}")
+            
+            # Check if profile is already indexed (skip to avoid duplicates)
+            if profile_id in indexed_profile_ids:
+                skipped_count += 1
+                if idx % 50 == 0:
+                    logging.debug(f"⏭️ Skipping already indexed profile {profile_id} ({idx}/{total_profiles})")
                 continue
             
             try:
                 raw_text = profile.get("raw_text", "") or ""
                 
-                # Skip profiles with no text content
+                # Generate raw_text from profile fields if missing or too short
                 if not raw_text or len(raw_text.strip()) < 10:
-                    logging.debug(f"⚠️ Profile {profile_id}: No raw_text or too short, skipping")
-                    error_count += 1
-                    error_details.append(f"{profile_id}: No raw_text or too short")
-                    continue
+                    generated_text = generate_raw_text_from_profile(profile)
+                    
+                    if generated_text and len(generated_text.strip()) >= 10:
+                        raw_text = generated_text
+                        # Update profile in MongoDB with generated raw_text
+                        try:
+                            await trainer_profiles.update_one(
+                                {"_id": profile.get("_id")},
+                                {"$set": {"raw_text": raw_text}}
+                            )
+                            profiles_updated += 1
+                            logging.info(f"✅ Generated raw_text for profile {profile_id} ({idx}/{total_profiles})")
+                        except Exception as e:
+                            logging.warning(f"⚠️ Failed to update raw_text for profile {profile_id}: {e}")
+                    else:
+                        logging.warning(f"⚠️ Profile {profile_id}: Could not generate sufficient raw_text, skipping")
+                        error_count += 1
+                        error_details.append(f"{profile_id}: Insufficient data to generate raw_text")
+                        continue
                 
                 # Prepare metadata
                 metadata = {
@@ -657,7 +804,7 @@ async def reindex_all_profiles_multi_vector():
                 success_count += 1
                 
                 if idx % 10 == 0:
-                    logging.info(f"📊 Reindex progress: {idx}/{total_profiles} ({success_count} success, {error_count} errors)")
+                    logging.info(f"📊 Reindex progress: {idx}/{total_profiles} ({success_count} indexed, {skipped_count} skipped, {error_count} errors)")
             
             except Exception as e:
                 error_count += 1
@@ -678,7 +825,9 @@ async def reindex_all_profiles_multi_vector():
                 
                 continue
         
-        logging.info(f"✅ Multi-vector reindex completed: {success_count} success, {error_count} errors out of {total_profiles} profiles")
+        logging.info(f"✅ Multi-vector reindex completed: {success_count} indexed, {skipped_count} skipped (already indexed), {error_count} errors out of {total_profiles} profiles")
+        if profiles_updated > 0:
+            logging.info(f"📝 Updated {profiles_updated} profiles in MongoDB with generated profile_id/raw_text")
         
         # Log error summary if there were errors
         if error_count > 0:
@@ -768,29 +917,34 @@ async def startup_initialization():
         except Exception as e:
             logging.warning(f"⚠️ Vector store initialization warning: {e}")
         
-        # Step 5: Run reindex if version changed OR if multi-vector index is empty
-        logging.info("🔧 Step 5/5: Checking reindex version and multi-vector index...")
+        # Step 5: Always run incremental reindex on startup (only indexes missing profiles)
+        logging.info("🔧 Step 5/5: Running incremental reindex (only missing profiles will be indexed)...")
         from services.vector_store import multi_vector_index
         multi_vector_count = multi_vector_index.ntotal if multi_vector_index else 0
         
-        # Check if reindex is needed: version changed OR multi-vector index is empty
-        needs_reindex = should_run_reindex() or multi_vector_count == 0
-        
-        if needs_reindex:
-            if multi_vector_count == 0:
-                logging.info(f"🔄 Multi-vector index is empty ({multi_vector_count} chunks), running reindex...")
-            try:
-                await reindex_all_profiles_multi_vector()
-                # Store version after successful reindex
-                store_reindex_version(REINDEX_VERSION)
-                logging.info("✅ Reindex completed and version stored")
-            except Exception as e:
+        try:
+            # Always run reindex - it will skip already indexed profiles
+            await reindex_all_profiles_multi_vector()
+            # Store version after successful reindex (for tracking purposes)
+            store_reindex_version(REINDEX_VERSION)
+            logging.info("✅ Incremental reindex completed (only missing profiles were indexed)")
+        except Exception as e:
+            error_msg = str(e)
+            is_connection_error = "Connection refused" in error_msg or "timed out" in error_msg.lower() or "Errno 111" in error_msg
+            
+            if is_connection_error:
+                logging.warning(f"⚠️ Reindex skipped due to MongoDB connection issue: {error_msg[:200]}")
+                logging.warning("⚠️ The application will start, but reindexing will be retried on next startup")
+                logging.warning("⚠️ Please check:")
+                logging.warning("   1. MongoDB Atlas IP whitelist includes your server IP")
+                logging.warning("   2. Connection string format (should use mongodb+srv:// for Atlas)")
+                logging.warning("   3. Network connectivity from Docker container to MongoDB Atlas")
+            else:
                 logging.error(f"❌ Reindex failed: {e}")
                 import traceback
                 logging.error(traceback.format_exc())
-                # Don't store version if reindex failed - will retry on next startup
-        else:
-            logging.info(f"✅ Reindex skipped (version unchanged, multi-vector has {multi_vector_count} chunks)")
+            # Don't store version if reindex failed - will retry on next startup
+            # Application will continue to start even if reindex fails
         
         logging.info("🎉 Startup initialization completed successfully")
         
@@ -871,6 +1025,10 @@ def get_client_ip(request) -> Optional[str]:
     except Exception:
         pass
     return None
+
+# Import whatsapp router after helper functions are defined (avoids circular import)
+from api.whatsapp import router as whatsapp_router
+app.include_router(whatsapp_router)
 
 @app.post("/admin/bulk_upload_start")
 async def bulk_upload(files: list[UploadFile] = File(...), http_request: Request = None, user=Depends(get_admin_user)):
@@ -1109,9 +1267,18 @@ async def add_new_admin(admin_data: AdminSignup, user=Depends(get_admin_user)):
     """
     # 1. Security Check: Ensure the requester is a Super Admin
     # You can move this list to .env
-    SUPER_ADMINS = ["team@gisul.co.in", "shaveta.goyal@gisul.co.in", "sahil.goyal@gisul.co.in"] 
+    SUPER_ADMINS = [
+        "team@gisul.co.in", 
+        "shaveta.goyal@gisul.co.in", 
+        "sahil.goyal@gisul.co.in",
+        "super@gisul.com"
+    ]
     
-    if user["email"] not in SUPER_ADMINS:
+    # Case-insensitive check
+    user_email_lower = user["email"].lower().strip()
+    super_admin_emails_lower = [email.lower().strip() for email in SUPER_ADMINS]
+    
+    if user_email_lower not in super_admin_emails_lower:
         raise HTTPException(status_code=403, detail="Only Super Admins can add new admins.")
 
     # 2. Check if email already exists
@@ -4090,12 +4257,35 @@ async def get_all_requirements(user=Depends(get_admin_user)):
 @app.get("/admin/requirements/pending_count")
 async def get_pending_requirements_count(user=Depends(get_admin_user)):
     """Get count of pending requirements for notification"""
-    try:
-        count = await customer_requirements.count_documents({"status": "pending"})
-        return {"pending_count": count}
-    except Exception as e:
-        logging.error(f"Error fetching pending count: {e}")
-        raise HTTPException(status_code=500, detail=f"Error fetching pending count: {str(e)}")
+    import asyncio
+    max_retries = 3
+    retry_delay = 1  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            count = await customer_requirements.count_documents({"status": "pending"})
+            return {"pending_count": count}
+        except Exception as e:
+            error_msg = str(e)
+            is_timeout = "timed out" in error_msg.lower() or "timeout" in error_msg.lower()
+            
+            if attempt < max_retries - 1 and is_timeout:
+                # Retry on timeout with exponential backoff
+                wait_time = retry_delay * (2 ** attempt)
+                logging.warning(f"⚠️ MongoDB timeout on attempt {attempt + 1}/{max_retries}, retrying in {wait_time}s...")
+                await asyncio.sleep(wait_time)
+                continue
+            else:
+                # Final attempt failed or non-timeout error
+                logging.error(f"Error fetching pending count: {e}")
+                # Return 0 instead of error to prevent UI issues
+                if is_timeout:
+                    logging.warning("⚠️ Returning default count (0) due to MongoDB timeout")
+                    return {"pending_count": 0}
+                raise HTTPException(status_code=500, detail=f"Error fetching pending count: {str(e)}")
+    
+    # Should not reach here, but return default if it does
+    return {"pending_count": 0}
 
 @app.get("/admin/dashboard")
 async def get_admin_dashboard(user=Depends(get_admin_user)):

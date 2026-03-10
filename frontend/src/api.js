@@ -75,6 +75,33 @@ export async function addAdmin(token, adminData) {
     },
     body: JSON.stringify(adminData),
   });
+  
+  // Check if response is ok before parsing JSON
+  if (!response.ok) {
+    // Try to parse error response as JSON
+    let errorDetail = `HTTP ${response.status}: ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      errorDetail = errorData.detail || errorData.message || errorDetail;
+    } catch (e) {
+      // If JSON parsing fails, try to get text
+      try {
+        const errorText = await response.text();
+        // If it's HTML, extract meaningful error
+        if (errorText.includes('<html>') || errorText.includes('<!DOCTYPE')) {
+          errorDetail = `Server error (${response.status}). Please check the server logs.`;
+        } else {
+          errorDetail = errorText || errorDetail;
+        }
+      } catch (textError) {
+        // If all else fails, use status
+        errorDetail = `HTTP ${response.status}: ${response.statusText}`;
+      }
+    }
+    throw new Error(errorDetail);
+  }
+  
+  // Parse JSON only if response is ok
   return await response.json();
 }
 
