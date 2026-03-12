@@ -1761,7 +1761,7 @@ function TrainersList({ token }) {
   // LOGIC BLOCK END
   // ---------------------------------------------------------------------------
 
-  return (
+ return (
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans">
       <div className="max-w-[107rem] mx-auto space-y-6">
         {/* Main Card */}
@@ -1773,9 +1773,6 @@ function TrainersList({ token }) {
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
                   Trainers <span style={{ color: "#6953a3" }}>List</span>
                 </h2>
-                <p className="text-gray-500 text-sm mt-1">
-                  Manage and search your expert trainers
-                </p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-semibold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
@@ -1793,18 +1790,8 @@ function TrainersList({ token }) {
               {/* Main Search */}
               <div className="lg:col-span-5 relative group">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6953a3] transition-colors">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                 </div>
                 <input
@@ -1820,85 +1807,50 @@ function TrainersList({ token }) {
               {/* Skill Domain Filter */}
               <div className="lg:col-span-4 relative group">
                 <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-[#6953a3] transition-colors">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                    />
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
                 <input
                   type="text"
                   ref={searchInputRef}
                   value={skillDomainFilter}
-                  onChange={(e) => {
-                    setSkillDomainFilter(e.target.value);
-                    setShowSuggestions(true);
-                  }}
+                  onChange={(e) => { setSkillDomainFilter(e.target.value); setShowSuggestions(true); }}
                   onFocus={() => setShowSuggestions(true)}
                   placeholder="Filter by Skill Domain..."
                   className="w-full pl-12 pr-10 py-3.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#6953a3]/20 focus:border-[#6953a3] transition-all"
                 />
                 {skillDomainFilter && (
                   <button
-                    onClick={() => {
-                      setSkillDomainFilter("");
-                      setExpandedKeywords([]);
-                    }}
+                    onClick={() => { setSkillDomainFilter(""); setExpandedKeywords([]); }}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-red-500 p-1 hover:bg-red-50 rounded-full transition-all"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 )}
 
                 {/* Suggestions Dropdown */}
-                {showSuggestions &&
-                  skillDomainFilter &&
-                  skillDomainSuggestions.length > 0 && (
-                    <div
-                      ref={suggestionsRef}
-                      className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100"
-                    >
-                      {skillDomainSuggestions
-                        .filter((domain) =>
-                          domain
-                            .toLowerCase()
-                            .includes(skillDomainFilter.toLowerCase()),
-                        )
-                        .slice(0, 10)
-                        .map((domain) => (
-                          <div
-                            key={domain}
-                            onClick={() => {
-                              setSkillDomainFilter(domain);
-                              setShowSuggestions(false);
-                            }}
-                            className="px-4 py-3 hover:bg-purple-50 cursor-pointer text-sm text-gray-700 hover:text-[#6953a3] transition-colors border-b border-gray-50 last:border-none"
-                          >
-                            {domain}
-                          </div>
-                        ))}
-                    </div>
-                  )}
+                {showSuggestions && skillDomainFilter && skillDomainSuggestions.length > 0 && (
+                  <div
+                    ref={suggestionsRef}
+                    className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-100"
+                  >
+                    {skillDomainSuggestions
+                      .filter((domain) => domain.toLowerCase().includes(skillDomainFilter.toLowerCase()))
+                      .slice(0, 10)
+                      .map((domain) => (
+                        <div
+                          key={domain}
+                          onClick={() => { setSkillDomainFilter(domain); setShowSuggestions(false); }}
+                          className="px-4 py-3 hover:bg-purple-50 cursor-pointer text-sm text-gray-700 hover:text-[#6953a3] transition-colors border-b border-gray-50 last:border-none"
+                        >
+                          {domain}
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
 
               {/* Experience Filter & Action */}
@@ -1917,22 +1869,11 @@ function TrainersList({ token }) {
                     <option value="10+">10+ years</option>
                   </select>
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                 </div>
-
                 <button
                   onClick={handleSearch}
                   className="px-6 py-3.5 rounded-xl text-white font-bold text-sm shadow-lg shadow-purple-200 hover:shadow-purple-300 transform hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap"
@@ -1944,72 +1885,41 @@ function TrainersList({ token }) {
             </div>
 
             {/* AI Expansion Feedback */}
-            {(expandedKeywords.length > 0 || expandingDomain) &&
-              skillDomainFilter && (
-                <div className="mt-4 p-4 bg-purple-50/50 border border-purple-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-                  <div className="bg-white p-2 rounded-lg shadow-sm text-[#6953a3]">
-                    {expandingDomain ? (
-                      <svg
-                        className="w-5 h-5 animate-spin"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                    ) : (
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-800 mb-2">
-                      {expandingDomain
-                        ? `AI is expanding "${skillDomainFilter}"...`
-                        : "AI Expanded Search Scope:"}
-                    </p>
-                    {!expandingDomain && (
-                      <div className="flex flex-wrap gap-2">
-                        {expandedKeywords.slice(0, 10).map((keyword, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2.5 py-1 bg-white border border-purple-100 text-[#6953a3] text-xs font-medium rounded-md shadow-sm"
-                          >
-                            {keyword}
-                          </span>
-                        ))}
-                        {expandedKeywords.length > 10 && (
-                          <span className="px-2.5 py-1 bg-purple-100 text-[#6953a3] text-xs font-bold rounded-md">
-                            +{expandedKeywords.length - 10} more
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+            {(expandedKeywords.length > 0 || expandingDomain) && skillDomainFilter && (
+              <div className="mt-4 p-4 bg-purple-50/50 border border-purple-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                <div className="bg-white p-2 rounded-lg shadow-sm text-[#6953a3]">
+                  {expandingDomain ? (
+                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                  )}
                 </div>
-              )}
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-gray-800 mb-2">
+                    {expandingDomain ? `AI is expanding "${skillDomainFilter}"...` : "AI Expanded Search Scope:"}
+                  </p>
+                  {!expandingDomain && (
+                    <div className="flex flex-wrap gap-2">
+                      {expandedKeywords.slice(0, 10).map((keyword, idx) => (
+                        <span key={idx} className="px-2.5 py-1 bg-white border border-purple-100 text-[#6953a3] text-xs font-medium rounded-md shadow-sm">
+                          {keyword}
+                        </span>
+                      ))}
+                      {expandedKeywords.length > 10 && (
+                        <span className="px-2.5 py-1 bg-purple-100 text-[#6953a3] text-xs font-bold rounded-md">
+                          +{expandedKeywords.length - 10} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Content Area */}
@@ -2017,9 +1927,7 @@ function TrainersList({ token }) {
             {loading ? (
               <div className="text-center py-20">
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-100 border-t-[#6953a3] mx-auto mb-4"></div>
-                <p className="text-gray-500 font-medium">
-                  Loading trainer directory...
-                </p>
+                <p className="text-gray-500 font-medium">Loading trainer directory...</p>
               </div>
             ) : (
               <>
@@ -2027,39 +1935,19 @@ function TrainersList({ token }) {
                 <div className="block md:hidden p-4 space-y-4">
                   {filteredTrainers.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
-                      <p className="text-gray-500">
-                        No trainers found matching criteria.
-                      </p>
+                      <p className="text-gray-500">No trainers found matching criteria.</p>
                     </div>
                   ) : (
                     filteredTrainers.map((trainer, index) => {
                       if (!trainer || typeof trainer !== "object") return null;
-
-                      // Logic variables extraction
                       const trainerName = String(trainer.name || "N/A");
                       const trainerEmailRaw = trainer.email;
-                      const trainerEmail = trainerEmailRaw
-                        ? String(trainerEmailRaw)
-                        : "N/A";
-                      const hasValidEmail =
-                        trainerEmailRaw &&
-                        trainerEmailRaw !== "N/A" &&
-                        trainerEmailRaw !== "n/a" &&
-                        trainerEmailRaw.trim() !== "" &&
-                        trainerEmailRaw.includes("@");
+                      const trainerEmail = trainerEmailRaw ? String(trainerEmailRaw) : "N/A";
+                      const hasValidEmail = trainerEmailRaw && trainerEmailRaw !== "N/A" && trainerEmailRaw !== "n/a" && trainerEmailRaw.trim() !== "" && trainerEmailRaw.includes("@");
                       const trainerProfileId = trainer.profile_id || "";
-                      const canDelete =
-                        hasValidEmail ||
-                        (trainerProfileId && trainerProfileId.trim() !== "");
-                      const deleteIdentifier = hasValidEmail
-                        ? trainerEmailRaw || trainerEmail
-                        : trainerProfileId;
-                      const experienceYears =
-                        trainer.experience_years !== null &&
-                        trainer.experience_years !== undefined &&
-                        trainer.experience_years !== ""
-                          ? Number(trainer.experience_years)
-                          : null;
+                      const canDelete = hasValidEmail || (trainerProfileId && trainerProfileId.trim() !== "");
+                      const deleteIdentifier = hasValidEmail ? trainerEmailRaw || trainerEmail : trainerProfileId;
+                      const experienceYears = trainer.experience_years !== null && trainer.experience_years !== undefined && trainer.experience_years !== "" ? Number(trainer.experience_years) : null;
                       const skills = normalizeSkills(trainer?.skills || []);
 
                       return (
@@ -2069,58 +1957,34 @@ function TrainersList({ token }) {
                         >
                           <div className="flex justify-between items-start mb-4">
                             <div>
-                              <h3 className="font-bold text-gray-900 text-lg mb-1">
-                                {trainerName}
-                              </h3>
-                              <p className="text-sm text-gray-500 truncate max-w-[200px]">
-                                {trainerEmail}
-                              </p>
+                              <h3 className="font-bold text-gray-900 text-lg mb-1">{trainerName}</h3>
+                              <p className="text-sm text-gray-500 truncate max-w-[200px]">{trainerEmail}</p>
                             </div>
                             <StatusBadge isAvailable={trainer.is_available} />
                           </div>
-
                           <div className="space-y-3 mb-5">
                             <div className="flex gap-2">
-                              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[70px]">
-                                Skills
-                              </span>
+                              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[70px]">Skills</span>
                               <div className="flex-1">
                                 {skills.length > 0 ? (
                                   <div className="flex flex-wrap gap-1">
                                     {skills.slice(0, 3).map((s, i) => (
-                                      <span
-                                        key={i}
-                                        className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded"
-                                      >
-                                        {s}
-                                      </span>
+                                      <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">{s}</span>
                                     ))}
-                                    {skills.length > 3 && (
-                                      <span className="text-xs text-gray-400">
-                                        +{skills.length - 3}
-                                      </span>
-                                    )}
+                                    {skills.length > 3 && <span className="text-xs text-gray-400">+{skills.length - 3}</span>}
                                   </div>
                                 ) : (
-                                  <span className="text-xs text-gray-400 italic">
-                                    N/A
-                                  </span>
+                                  <span className="text-xs text-gray-400 italic">N/A</span>
                                 )}
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[70px]">
-                                Exp
-                              </span>
+                              <span className="text-xs font-bold text-gray-400 uppercase tracking-wider min-w-[70px]">Exp</span>
                               <span className="text-sm font-medium text-gray-700">
-                                {experienceYears !== null &&
-                                !Number.isNaN(experienceYears)
-                                  ? `${experienceYears} Years`
-                                  : "N/A"}
+                                {experienceYears !== null && !Number.isNaN(experienceYears) ? `${experienceYears} Years` : "N/A"}
                               </span>
                             </div>
                           </div>
-
                           <div className="grid grid-cols-2 gap-3">
                             <button
                               onClick={() => handleEditTrainer(trainer)}
@@ -2130,16 +1994,8 @@ function TrainersList({ token }) {
                               Edit Profile
                             </button>
                             <button
-                              onClick={() =>
-                                handleDeleteTrainer(
-                                  trainerEmailRaw || trainerEmail,
-                                  trainerName,
-                                  trainerProfileId,
-                                )
-                              }
-                              disabled={
-                                deleting === deleteIdentifier || !canDelete
-                              }
+                              onClick={() => handleDeleteTrainer(trainerEmailRaw || trainerEmail, trainerName, trainerProfileId)}
+                              disabled={deleting === deleteIdentifier || !canDelete}
                               className="py-2.5 rounded-xl text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                               {deleting === deleteIdentifier ? "..." : "Delete"}
@@ -2152,29 +2008,26 @@ function TrainersList({ token }) {
                 </div>
 
                 {/* Desktop Table View */}
-                <div
-                  className="hidden md:block overflow-x-auto"
-                  ref={tableContainerRef}
-                >
-                  <table className="w-full text-left border-collapse">
+                <div className="hidden md:block overflow-x-auto" ref={tableContainerRef}>
+                  <table className="w-full text-left border-collapse table-fixed">
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-200">
-                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <th className="px-5 py-5 text-sm font-bold text-gray-400 uppercase tracking-wider w-[18%]">
                           Trainer Details
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <th className="px-5 py-5 text-sm font-bold text-gray-400 uppercase tracking-wider w-[20%]">
                           Contact
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider w-1/3">
+                        <th className="px-5 py-5 text-sm font-bold text-gray-400 uppercase tracking-wider w-[28%]">
                           Skills & Expertise
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
+                        <th className="px-5 py-5 text-sm font-bold text-gray-400 uppercase tracking-wider text-center w-[12%]">
                           Experience
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
+                        <th className="px-5 py-5 text-sm font-bold text-gray-400 uppercase tracking-wider text-center w-[14%]">
                           Commercial Range
                         </th>
-                        <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">
+                        <th className="px-5 py-5 text-sm font-bold text-gray-400 uppercase tracking-wider text-center w-[8%]">
                           Actions
                         </th>
                       </tr>
@@ -2182,221 +2035,147 @@ function TrainersList({ token }) {
                     <tbody className="divide-y divide-gray-100">
                       {filteredTrainers.length === 0 ? (
                         <tr>
-                          <td colSpan="5" className="px-6 py-12 text-center">
+                          <td colSpan="6" className="px-6 py-12 text-center">
                             <div className="flex flex-col items-center justify-center text-gray-400">
-                              <svg
-                                className="w-12 h-12 mb-3 text-gray-200"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
+                              <svg className="w-12 h-12 mb-3 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
-                              <p className="text-lg font-medium">
-                                No results found
-                              </p>
-                              <p className="text-sm">
-                                Try adjusting your filters
-                              </p>
+                              <p className="text-lg font-medium">No results found</p>
+                              <p className="text-sm">Try adjusting your filters</p>
                             </div>
                           </td>
                         </tr>
                       ) : (
                         filteredTrainers.map((trainer, index) => {
-                          if (!trainer || typeof trainer !== "object")
-                            return null;
+                          if (!trainer || typeof trainer !== "object") return null;
 
-                          // Variable extraction logic (Same as original)
                           const trainerName = String(trainer.name || "N/A");
                           const trainerEmailRaw = trainer.email;
-                          const trainerEmail = trainerEmailRaw
-                            ? String(trainerEmailRaw)
-                            : "N/A";
-                          const hasValidEmail =
-                            trainerEmailRaw &&
-                            trainerEmailRaw !== "N/A" &&
-                            trainerEmailRaw !== "n/a" &&
-                            trainerEmailRaw.trim() !== "" &&
-                            trainerEmailRaw.includes("@");
+                          const trainerEmail = trainerEmailRaw ? String(trainerEmailRaw) : "N/A";
+                          const hasValidEmail = trainerEmailRaw && trainerEmailRaw !== "N/A" && trainerEmailRaw !== "n/a" && trainerEmailRaw.trim() !== "" && trainerEmailRaw.includes("@");
                           const trainerProfileId = trainer.profile_id || "";
-                          const canDelete =
-                            hasValidEmail ||
-                            (trainerProfileId &&
-                              trainerProfileId.trim() !== "");
-                          const deleteIdentifier = hasValidEmail
-                            ? trainerEmailRaw || trainerEmail
-                            : trainerProfileId;
-                          const experienceYears =
-                            trainer.experience_years !== null &&
-                            trainer.experience_years !== undefined &&
-                            trainer.experience_years !== ""
-                              ? Number(trainer.experience_years)
-                              : null;
+                          const canDelete = hasValidEmail || (trainerProfileId && trainerProfileId.trim() !== "");
+                          const deleteIdentifier = hasValidEmail ? trainerEmailRaw || trainerEmail : trainerProfileId;
+                          const experienceYears = trainer.experience_years !== null && trainer.experience_years !== undefined && trainer.experience_years !== "" ? Number(trainer.experience_years) : null;
                           const skills = normalizeSkills(trainer?.skills || []);
 
                           return (
                             <tr
                               key={`${trainerEmail || trainerProfileId || trainerName || index}-${index}`}
-                              className="group hover:bg-purple-50/30 transition-colors"
+                              className="hover:bg-purple-50/30 transition-colors"
                             >
-                              <td className="px-6 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center text-[#6953a3] font-bold text-sm shadow-sm border border-purple-100">
+                              {/* Trainer Details */}
+                              <td className="px-5 py-5 h-20">
+                                <div className="flex items-center gap-4 min-w-0">
+                                  <div className="w-11 h-11 flex-shrink-0 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center text-[#6953a3] font-bold text-base shadow-sm border border-purple-100">
                                     {trainerName.charAt(0).toUpperCase()}
                                   </div>
-                                  <div>
-                                    <p className="font-semibold text-gray-900">
-                                      {trainerName}
-                                    </p>
+                                  <div className="min-w-0">
+                                    <p className="font-semibold text-gray-900 text-base truncate">{trainerName}</p>
                                     <div className="mt-1">
-                                      <StatusBadge
-                                        isAvailable={trainer.is_available}
-                                      />
+                                      <StatusBadge isAvailable={trainer.is_available} />
                                     </div>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4">
-                                <div
-                                  className="text-sm text-gray-600 font-medium"
-                                  title={
-                                    trainerEmail || `ID: ${trainerProfileId}`
-                                  }
-                                >
-                                  {trainerEmail !== "N/A" ? (
-                                    trainerEmail
-                                  ) : (
-                                    <span className="text-gray-400 text-xs font-mono bg-gray-50 px-2 py-1 rounded">
-                                      ID: {trainerProfileId.substring(0, 8)}...
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="flex flex-wrap gap-1.5">
+
+                              {/* Contact */}
+<td className="px-5 py-5 h-20">
+  <div className="flex flex-col gap-1">
+    {/* Email */}
+    <div className="text-base text-gray-600 font-medium truncate" title={trainerEmail}>
+      {hasValidEmail ? (
+        <span className="truncate block">{trainerEmail}</span>
+      ) : (
+        <span className="text-gray-400 text-sm">N/A</span>
+      )}
+    </div>
+    {/* Phone */}
+    {trainer.phone && String(trainer.phone).trim() !== "" && (
+      <div className="text-sm text-gray-400 font-medium flex items-center gap-1">
+        <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+        </svg>
+        <span>{String(trainer.phone)}</span>
+      </div>
+    )}
+  </div>
+</td>
+
+                              {/* Skills */}
+                              <td className="px-5 py-5 h-20">
+                                <div className="flex flex-wrap gap-2 items-center">
                                   {skills.length > 0 ? (
                                     <>
                                       {skills.slice(0, 3).map((skill, i) => (
                                         <span
                                           key={i}
-                                          className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200"
+                                          className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200 whitespace-nowrap"
                                         >
                                           {skill}
                                         </span>
                                       ))}
                                       {skills.length > 3 && (
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-purple-50 text-[#6953a3] border border-purple-100">
+                                        <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-purple-50 text-[#6953a3] border border-purple-100 whitespace-nowrap">
                                           +{skills.length - 3}
                                         </span>
                                       )}
                                     </>
                                   ) : (
-                                    <span className="text-sm text-gray-400 italic">
-                                      No specific skills listed
-                                    </span>
+                                    <span className="text-base text-gray-400 italic">No skills listed</span>
                                   )}
                                 </div>
                               </td>
-                              <td className="px-6 py-4 text-center">
-                                {experienceYears !== null &&
-                                !Number.isNaN(experienceYears) ? (
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+
+                              {/* Experience */}
+                              <td className="px-5 py-5 h-20 text-center align-middle">
+                                {experienceYears !== null && !Number.isNaN(experienceYears) ? (
+                                  <span className="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-sm font-bold bg-blue-50 text-blue-700 border border-blue-100">
                                     {experienceYears} Yrs
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400">-</span>
+                                  <span className="text-gray-400 text-base">—</span>
                                 )}
                               </td>
-                              <td className="px-6 py-4 text-center">
-                                {trainer.min_commercial ||
-                                trainer.max_commercial ? (
-                                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-bold bg-green-50 text-green-700 border border-green-100 whitespace-nowrap">
-                                    ₹{trainer.min_commercial || 0} - ₹
-                                    {trainer.max_commercial || 0}
+
+                              {/* Commercial Range */}
+                              <td className="px-5 py-5 h-20 text-center align-middle">
+                                {trainer.min_commercial || trainer.max_commercial ? (
+                                  <span className="inline-flex items-center justify-center px-3 py-1.5 rounded-md text-sm font-bold bg-green-50 text-green-700 border border-green-100 whitespace-nowrap">
+                                    ₹{trainer.min_commercial || 0}–₹{trainer.max_commercial || 0}
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400 text-xs italic">
-                                    N/A
-                                  </span>
+                                  <span className="text-gray-400 text-sm italic">N/A</span>
                                 )}
                               </td>
-                              <td className="px-6 py-4 text-right">
-                                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                              {/* Actions - Always Visible */}
+                              <td className="px-5 py-5 h-20 text-center align-middle">
+                                <div className="flex items-center justify-center gap-2">
                                   <button
                                     onClick={() => handleEditTrainer(trainer)}
                                     disabled={!canDelete}
                                     className="p-2 text-gray-500 hover:text-[#6953a3] hover:bg-purple-50 rounded-lg transition-all disabled:opacity-50"
                                     title={canDelete ? "Edit" : "Cannot edit"}
                                   >
-                                    <svg
-                                      className="w-5 h-5"
-                                      fill="none"
-                                      viewBox="0 0 24 24"
-                                      stroke="currentColor"
-                                    >
-                                      <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                                      />
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                   </button>
                                   <button
-                                    onClick={() =>
-                                      handleDeleteTrainer(
-                                        trainerEmailRaw || trainerEmail,
-                                        trainerName,
-                                        trainerProfileId,
-                                      )
-                                    }
-                                    disabled={
-                                      deleting === deleteIdentifier ||
-                                      !canDelete
-                                    }
+                                    onClick={() => handleDeleteTrainer(trainerEmailRaw || trainerEmail, trainerName, trainerProfileId)}
+                                    disabled={deleting === deleteIdentifier || !canDelete}
                                     className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50"
-                                    title={
-                                      canDelete ? "Delete" : "Cannot delete"
-                                    }
+                                    title={canDelete ? "Delete" : "Cannot delete"}
                                   >
                                     {deleting === deleteIdentifier ? (
-                                      <svg
-                                        className="w-5 h-5 animate-spin"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <circle
-                                          className="opacity-25"
-                                          cx="12"
-                                          cy="12"
-                                          r="10"
-                                          stroke="currentColor"
-                                          strokeWidth="4"
-                                        ></circle>
-                                        <path
-                                          className="opacity-75"
-                                          fill="currentColor"
-                                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                                        ></path>
+                                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                       </svg>
                                     ) : (
-                                      <svg
-                                        className="w-5 h-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                      >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                                        />
+                                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                       </svg>
                                     )}
                                   </button>
@@ -2415,7 +2194,7 @@ function TrainersList({ token }) {
         </div>
       </div>
 
-      {/* Edit Trainer Modal - With Backdrop Blur and Scale Animation */}
+      {/* Edit Trainer Modal */}
       {editingTrainer &&
         typeof createPortal === "function" &&
         createPortal(
@@ -2432,30 +2211,16 @@ function TrainersList({ token }) {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
                 <div className="flex items-center justify-between relative z-10">
                   <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">
-                      Edit Profile
-                    </h2>
-                    <p className="text-purple-200 text-sm mt-1 font-medium">
-                      Update trainer details and competencies
-                    </p>
+                    <h2 className="text-2xl font-bold text-white tracking-tight">Edit Profile</h2>
+                    <p className="text-purple-200 text-sm mt-1 font-medium">Update trainer details and competencies</p>
                   </div>
                   <button
                     onClick={handleCloseEditModal}
                     className="bg-white/20 hover:bg-white/30 text-white rounded-full p-2.5 transition-all backdrop-blur-md"
                     disabled={saving}
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
@@ -2465,18 +2230,11 @@ function TrainersList({ token }) {
                 <div className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Name
-                      </label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Name</label>
                       <input
                         type="text"
                         value={editFormData.name || ""}
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            name: e.target.value,
-                          })
-                        }
+                        onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#6953a3] focus:border-transparent transition-all outline-none"
                         disabled={saving}
                       />
@@ -2488,58 +2246,27 @@ function TrainersList({ token }) {
                       <input
                         type="email"
                         value={editFormData.email || ""}
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            email: e.target.value,
-                          })
-                        }
+                        onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#6953a3] focus:border-transparent transition-all outline-none"
                         disabled={saving}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Phone
-                      </label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</label>
                       <input
                         type="tel"
-                        value={
-                          editFormData.phone ||
-                          (editingTrainer?.phone
-                            ? String(editingTrainer.phone)
-                            : "") ||
-                          ""
-                        }
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            phone: e.target.value,
-                          })
-                        }
+                        value={editFormData.phone || (editingTrainer?.phone ? String(editingTrainer.phone) : "") || ""}
+                        onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#6953a3] focus:border-transparent transition-all outline-none"
                         disabled={saving}
                       />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Location
-                      </label>
+                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Location</label>
                       <input
                         type="text"
-                        value={
-                          editFormData.location ||
-                          (editingTrainer?.location
-                            ? String(editingTrainer.location)
-                            : "") ||
-                          ""
-                        }
-                        onChange={(e) =>
-                          setEditFormData({
-                            ...editFormData,
-                            location: e.target.value,
-                          })
-                        }
+                        value={editFormData.location || (editingTrainer?.location ? String(editingTrainer.location) : "") || ""}
+                        onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#6953a3] focus:border-transparent transition-all outline-none"
                         disabled={saving}
                       />
@@ -2547,26 +2274,17 @@ function TrainersList({ token }) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Skills (Comma Separated)
-                    </label>
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Skills (Comma Separated)</label>
                     <textarea
                       value={editFormData.skills || ""}
-                      onChange={(e) =>
-                        setEditFormData({
-                          ...editFormData,
-                          skills: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setEditFormData({ ...editFormData, skills: e.target.value })}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#6953a3] focus:border-transparent transition-all outline-none resize-none min-h-[120px]"
                       placeholder="e.g. Java, Python, React, AWS..."
                       disabled={saving}
                     />
                     <div className="flex justify-end">
                       <span className="text-xs text-gray-400">
-                        {editFormData.skills
-                          ? `${editFormData.skills.split(",").filter((s) => s.trim()).length} skills`
-                          : "0 skills"}
+                        {editFormData.skills ? `${editFormData.skills.split(",").filter((s) => s.trim()).length} skills` : "0 skills"}
                       </span>
                     </div>
                   </div>
@@ -2587,24 +2305,9 @@ function TrainersList({ token }) {
                   >
                     {saving ? (
                       <span className="flex items-center gap-2">
-                        <svg
-                          className="animate-spin h-4 w-4"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
+                        <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
                         Saving...
                       </span>
@@ -2628,51 +2331,26 @@ function InlineAnalytics({ token }) {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState({
-    experience: "",
-    skill_category: "",
-    location: "",
-  });
+  const [filters, setFilters] = useState({ experience: "", skill_category: "", location: "" });
   const [chartType, setChartType] = useState("bar");
-
-  // "bar" or "pie"
-
-  // 👇 1. NEW STATE: Store availability data separately
   const [availStats, setAvailStats] = useState([]);
 
-  // 👇 2. NEW EFFECT: Fetch availability automatically on load
-  // 👇 UPDATED: Fetch availability automatically based on CURRENT FILTERS
   useEffect(() => {
     const loadAvailability = async () => {
       try {
-        // 1. Prepare the filters just like we do for the main chart
         const activeFilters = {};
         Object.entries(filters).forEach(([key, value]) => {
           if (value !== "") {
-            // Convert string boolean to actual boolean for API if needed
-            if (key === "is_available") {
-              activeFilters[key] = value === "true";
-            } else {
-              activeFilters[key] = value;
-            }
+            if (key === "is_available") { activeFilters[key] = value === "true"; }
+            else { activeFilters[key] = value; }
           }
         });
-
-        // 2. Query specifically for availability, BUT pass the 'filters' object
-        const res = await analyticsQuery(token, {
-          fields: ["is_available"], // We only want availability data for this widget
-          filters: activeFilters, // <--- THIS IS THE KEY CHANGE
-        });
-
-        if (res && res.data) {
-          setAvailStats(res.data);
-        }
-      } catch (e) {
-        console.error("Failed to load availability stats", e);
-      }
+        const res = await analyticsQuery(token, { fields: ["is_available"], filters: activeFilters });
+        if (res && res.data) { setAvailStats(res.data); }
+      } catch (e) { console.error("Failed to load availability stats", e); }
     };
     loadAvailability();
-  }, [token, filters]); // <--- 3. Add 'filters' to the dependency array
+  }, [token, filters]);
 
   const availableFields = [
     { id: "skill_category", label: "Skill Category", type: "category" },
@@ -2680,106 +2358,58 @@ function InlineAnalytics({ token }) {
     { id: "location", label: "Location", type: "category" },
   ];
 
-  // Use the analyticsQuery function from api.js which handles API_BASE correctly
   const fetchAnalyticsData = useCallback(async () => {
-    if (selectedFields.length === 0) {
-      setChartData([]);
-      return;
-    }
-
+    if (selectedFields.length === 0) { setChartData([]); return; }
     setLoading(true);
     setError(null);
-
     try {
       const response = await analyticsQuery(token, {
         fields: selectedFields,
-        filters: Object.fromEntries(
-          Object.entries(filters).filter(([v]) => v !== ""),
-        ),
+        filters: Object.fromEntries(Object.entries(filters).filter(([v]) => v !== "")),
       });
-
-      console.log("[InlineAnalytics] Response received:", response);
-
-      // Handle response - check for data array or message
       if (response && response.data) {
         if (Array.isArray(response.data) && response.data.length > 0) {
-          setChartData(response.data);
-          setError(null);
+          setChartData(response.data); setError(null);
         } else {
-          // Empty data array - not an error, just no data
-          setChartData([]);
-          setError(
-            response.message || "No data available for the selected filters.",
-          );
+          setChartData([]); setError(response.message || "No data available for the selected filters.");
         }
       } else {
-        // Unexpected response format
-        console.warn("[InlineAnalytics] Unexpected response format:", response);
-        setChartData([]);
-        setError("Unexpected response format from analytics endpoint.");
+        setChartData([]); setError("Unexpected response format from analytics endpoint.");
       }
     } catch (err) {
-      console.error("[InlineAnalytics] Analytics query error:", err);
-      setError(err.message || "Failed to fetch analytics data");
-      setChartData([]);
-    } finally {
-      setLoading(false);
-    }
+      setError(err.message || "Failed to fetch analytics data"); setChartData([]);
+    } finally { setLoading(false); }
   }, [token, selectedFields, filters]);
 
-  useEffect(() => {
-    fetchAnalyticsData();
-  }, [fetchAnalyticsData]);
+  useEffect(() => { fetchAnalyticsData(); }, [fetchAnalyticsData]);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
-
     const items = Array.from(selectedFields);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-
     setSelectedFields(items);
   };
 
   const toggleField = (fieldId) => {
-    setSelectedFields((prev) =>
-      prev.includes(fieldId)
-        ? prev.filter((id) => id !== fieldId)
-        : [...prev, fieldId],
-    );
+    setSelectedFields((prev) => prev.includes(fieldId) ? prev.filter((id) => id !== fieldId) : [...prev, fieldId]);
   };
 
   const handleFilterChange = (filterName, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterName]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [filterName]: value }));
   };
 
   const handleReset = () => {
     setSelectedFields(["skill_category"]);
-    setFilters({
-      experience: "",
-      skill_category: "",
-      location: "",
-    });
+    setFilters({ experience: "", skill_category: "", location: "" });
     setError(null);
   };
 
   const handleExportCSV = () => {
-    if (chartData.length === 0) {
-      alert("No data to export");
-      return;
-    }
-
+    if (chartData.length === 0) { alert("No data to export"); return; }
     const headers = Object.keys(chartData[0]).join(",");
-    const rows = chartData.map((item) =>
-      Object.values(item)
-        .map((val) => `"${val}"`)
-        .join(","),
-    );
+    const rows = chartData.map((item) => Object.values(item).map((val) => `"${val}"`).join(","));
     const csvContent = [headers, ...rows].join("\n");
-
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -2793,66 +2423,23 @@ function InlineAnalytics({ token }) {
 
   const prepareChartData = () => {
     if (chartData.length === 0) return null;
-
     const xField = selectedFields[0] || "skill_category";
     const yField = selectedFields[1] || "count";
-
-    const labels = chartData.map((item) => {
-      const key = item._id || item[xField] || "Unknown";
-      return typeof key === "object" ? JSON.stringify(key) : String(key);
-    });
-
-    const values = chartData.map((item) => {
-      const count = item.count || item[yField] || 0;
-      return typeof count === "number" ? count : parseInt(count) || 0;
-    });
+    const labels = chartData.map((item) => { const key = item._id || item[xField] || "Unknown"; return typeof key === "object" ? JSON.stringify(key) : String(key); });
+    const values = chartData.map((item) => { const count = item.count || item[yField] || 0; return typeof count === "number" ? count : parseInt(count) || 0; });
 
     if (chartType === "pie") {
       return {
-        labels: labels,
-        values: values,
-        type: "pie",
-        marker: {
-          colors: [
-            "#6953a3",
-            "#8b7bb8",
-            "#a89ac8",
-            "#c5b9d8",
-            "#e2d8e8",
-            "#4a3a7a",
-            "#6b5a9a",
-            "#8c7aba",
-            "#ad9cda",
-            "#cebdfa",
-            "#3d2f62",
-            "#5d4f82",
-            "#7d6fa2",
-            "#9d8fc2",
-            "#bdafe2",
-          ],
-        },
-        textinfo: "label+percent",
-        textposition: "outside",
-        hole: 0,
+        labels, values, type: "pie",
+        marker: { colors: ["#6953a3","#8b7bb8","#a89ac8","#c5b9d8","#e2d8e8","#4a3a7a","#6b5a9a","#8c7aba","#ad9cda","#cebdfa","#3d2f62","#5d4f82","#7d6fa2","#9d8fc2","#bdafe2"] },
+        textinfo: "label+percent", textposition: "outside", hole: 0,
       };
     } else {
-      return {
-        x: labels,
-        y: values,
-        type: "bar",
-        marker: {
-          color: "#6953a3",
-          line: {
-            color: "#4a3a7a",
-            width: 1,
-          },
-        },
-      };
+      return { x: labels, y: values, type: "bar", marker: { color: "#6953a3", line: { color: "#4a3a7a", width: 1 } } };
     }
   };
 
   const chartDataForPlot = prepareChartData();
-  //min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 font-sans
 
   return (
     <div className="w-full max-w-[110rem] mx-auto px-4 sm:px-6 py-8">
@@ -2861,90 +2448,46 @@ function InlineAnalytics({ token }) {
         <div className="text-center mb-10 relative">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-purple-50 to-transparent opacity-30 blur-3xl -z-10 pointer-events-none"></div>
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-6 bg-gradient-to-br from-purple-600 to-indigo-700 shadow-lg shadow-purple-500/30 transform transition-transform hover:scale-105 duration-300">
-            <svg
-              className="w-10 h-10 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
+            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h2 className="text-4xl sm:text-5xl font-extrabold mb-4 bg-gradient-to-r from-purple-700 via-purple-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
-            Analytics Visualization
-          </h2>
-          {/* <p className="text-gray-500 text-lg sm:text-xl max-w-2xl mx-auto font-light leading-relaxed">
-            Gain insights into trainer data with powerful interactive charts and
-            real-time filtering.
-          </p> */}
+          <h2 className="text-4xl sm:text-5xl font-extrabold mb-4 tracking-tight" style={{ color: "#6953A3" }}>
+  Analytics Visualization
+</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-          {/* Left Sidebar - Filters (Takes 2 columns on large screens) */}
+          {/* Left Sidebar */}
           <div className="lg:col-span-3 xl:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg shadow-purple-900/5 p-4 mb-6 border border-gray-100">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">
-                Trainer Status
-              </h3>
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Trainer Status</h3>
               <div className="h-48 w-full relative">
                 {availStats.length > 0 ? (
                   <Plot
-                    data={[
-                      {
-                        values: availStats.map((d) => d.count),
-                        labels: availStats.map((d) =>
-                          d._id === true ? "Available" : "Busy",
-                        ),
-                        type: "pie",
-                        hole: 0.6, // Makes it a Donut chart
-                        marker: {
-                          colors: availStats.map((d) =>
-                            d._id === true ? "#22c55e" : "#94a3b8",
-                          ), // Green vs Gray
-                        },
-                        textinfo: "label+percent",
-                        textposition: "inside",
-                        showlegend: false,
-                      },
-                    ]}
-                    layout={{
-                      margin: { l: 0, r: 0, t: 0, b: 0 },
-                      height: 190,
-                      showlegend: false,
-                      paper_bgcolor: "transparent",
-                    }}
+                    data={[{
+                      values: availStats.map((d) => d.count),
+                      labels: availStats.map((d) => d._id === true ? "Available" : "Busy"),
+                      type: "pie", hole: 0.6,
+                      marker: { colors: availStats.map((d) => d._id === true ? "#22c55e" : "#94a3b8") },
+                      textinfo: "label+percent", textposition: "inside", showlegend: false,
+                    }]}
+                    layout={{ margin: { l: 0, r: 0, t: 0, b: 0 }, height: 190, showlegend: false, paper_bgcolor: "transparent" }}
                     config={{ displayModeBar: false }}
                     style={{ width: "100%", height: "100%" }}
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center text-gray-400 text-xs">
-                    Loading stats...
-                  </div>
+                  <div className="flex h-full items-center justify-center text-gray-400 text-xs">Loading stats...</div>
                 )}
-
-                {/* Center Text (Total Count) */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-                  <span className="text-2xl font-bold text-gray-800">
-                    {availStats.reduce((a, b) => a + (b.count || 0), 0)}
-                  </span>
-                  <p className="text-[10px] text-gray-400 uppercase font-bold">
-                    Total
-                  </p>
+                  <span className="text-2xl font-bold text-gray-800">{availStats.reduce((a, b) => a + (b.count || 0), 0)}</span>
+                  <p className="text-[10px] text-gray-400 uppercase font-bold">Total</p>
                 </div>
               </div>
-
-              {/* Legend / Key */}
               <div className="grid grid-cols-2 gap-2 mt-2">
                 <div className="flex items-center gap-2 bg-green-50 p-2 rounded-lg">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-xs font-bold text-green-700">
-                    Available
-                  </span>
+                  <span className="text-xs font-bold text-green-700">Available</span>
                 </div>
                 <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg">
                   <div className="w-2 h-2 rounded-full bg-gray-400"></div>
@@ -2952,39 +2495,24 @@ function InlineAnalytics({ token }) {
                 </div>
               </div>
             </div>
-            {/* 👆 END: NEW AVAILABILITY WIDGET 👆 */}
+
             <div className="bg-white rounded-2xl shadow-lg shadow-purple-900/5 p-6 sticky top-6 border border-gray-100 h-fit transition-shadow hover:shadow-xl">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <svg
-                    className="w-5 h-5 text-purple-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
-                    />
+                  <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                   </svg>
                   Filters
                 </h2>
-                {/* Reset button small icon for mobile optimized view could go here */}
               </div>
 
               {/* Experience Filter */}
               <div className="mb-5">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Experience
-                </label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Experience</label>
                 <div className="relative">
                   <select
                     value={filters.experience}
-                    onChange={(e) =>
-                      handleFilterChange("experience", e.target.value)
-                    }
+                    onChange={(e) => handleFilterChange("experience", e.target.value)}
                     className="w-full pl-3 pr-8 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm font-medium text-gray-700 transition-colors cursor-pointer hover:border-purple-300 outline-none appearance-none"
                   >
                     <option value="">All Levels</option>
@@ -2994,18 +2522,8 @@ function InlineAnalytics({ token }) {
                     <option value="10+">10+ years</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                   </div>
                 </div>
@@ -3013,49 +2531,22 @@ function InlineAnalytics({ token }) {
 
               {/* Skill Category Filter */}
               <div className="mb-5">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Skill Category
-                </label>
-
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Skill Category</label>
                 <div className="relative group">
                   <select
                     value={filters.skill_category}
-                    onChange={(e) =>
-                      handleFilterChange("skill_category", e.target.value)
-                    }
-                    className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl px-4 py-3 pr-10 shadow-sm outline-none transition-all duration-200 
-      hover:border-purple-300 hover:shadow-md hover:shadow-purple-500/10 
-      focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 
-      cursor-pointer placeholder-gray-400"
+                    onChange={(e) => handleFilterChange("skill_category", e.target.value)}
+                    className="w-full appearance-none bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl px-4 py-3 pr-10 shadow-sm outline-none transition-all duration-200 hover:border-purple-300 hover:shadow-md hover:shadow-purple-500/10 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 cursor-pointer"
                   >
                     <option value="">All Categories</option>
-
                     {chartData.map((item, index) => {
-                      const label =
-                        typeof item._id === "object"
-                          ? JSON.stringify(item._id)
-                          : String(item._id || "Unknown");
-
-                      return (
-                        <option
-                          key={index}
-                          value={label}
-                          className="text-gray-900"
-                        >
-                          {label} {item.count ? `(${item.count})` : ""}
-                        </option>
-                      );
+                      const label = typeof item._id === "object" ? JSON.stringify(item._id) : String(item._id || "Unknown");
+                      return <option key={index} value={label} className="text-gray-900">{label} {item.count ? `(${item.count})` : ""}</option>;
                     })}
                   </select>
-
-                  {/* Custom Arrow Icon */}
                   <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400 group-hover:text-purple-500 transition-colors duration-200">
                     <svg className="h-5 w-5 fill-current" viewBox="0 0 20 20">
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                      />
+                      <path fillRule="evenodd" clipRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                     </svg>
                   </div>
                 </div>
@@ -3063,37 +2554,18 @@ function InlineAnalytics({ token }) {
 
               {/* Location Filter */}
               <div className="mb-8">
-                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-                  Location
-                </label>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Location</label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                   </span>
                   <input
                     type="text"
                     value={filters.location}
-                    onChange={(e) =>
-                      handleFilterChange("location", e.target.value)
-                    }
+                    onChange={(e) => handleFilterChange("location", e.target.value)}
                     placeholder="City or Country"
                     className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm font-medium transition-all hover:bg-white focus:bg-white outline-none"
                   />
@@ -3104,26 +2576,14 @@ function InlineAnalytics({ token }) {
 
               {/* Chart Type Selector */}
               <div className="mb-6">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                  Visualization Style
-                </h3>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Visualization Style</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setChartType("bar")}
                     className={`flex items-center justify-center space-x-2 p-2 rounded-lg text-sm font-medium transition-all ${chartType === "bar" ? "bg-purple-100 text-purple-700 ring-1 ring-purple-300" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                      ></path>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                     </svg>
                     <span>Bar</span>
                   </button>
@@ -3131,24 +2591,9 @@ function InlineAnalytics({ token }) {
                     onClick={() => setChartType("pie")}
                     className={`flex items-center justify-center space-x-2 p-2 rounded-lg text-sm font-medium transition-all ${chartType === "pie" ? "bg-purple-100 text-purple-700 ring-1 ring-purple-300" : "bg-gray-50 text-gray-600 hover:bg-gray-100"}`}
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"
-                      ></path>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
                     </svg>
                     <span>Pie</span>
                   </button>
@@ -3157,26 +2602,17 @@ function InlineAnalytics({ token }) {
 
               {/* Available Fields */}
               <div className="mb-8">
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
-                  Compare Fields
-                </h3>
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Compare Fields</h3>
                 <div className="space-y-1 bg-gray-50/50 p-2 rounded-xl border border-gray-100">
                   {availableFields.map((field) => (
-                    <label
-                      key={field.id}
-                      className="flex items-center space-x-3 cursor-pointer p-2.5 hover:bg-white hover:shadow-sm rounded-lg transition-all group"
-                    >
-                      <div className="relative flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={selectedFields.includes(field.id)}
-                          onChange={() => toggleField(field.id)}
-                          className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded transition-all cursor-pointer"
-                        />
-                      </div>
-                      <span className="text-sm text-gray-700 font-medium group-hover:text-purple-700 transition-colors">
-                        {field.label}
-                      </span>
+                    <label key={field.id} className="flex items-center space-x-3 cursor-pointer p-2.5 hover:bg-white hover:shadow-sm rounded-lg transition-all group">
+                      <input
+                        type="checkbox"
+                        checked={selectedFields.includes(field.id)}
+                        onChange={() => toggleField(field.id)}
+                        className="w-4 h-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded transition-all cursor-pointer"
+                      />
+                      <span className="text-sm text-gray-700 font-medium group-hover:text-purple-700 transition-colors">{field.label}</span>
                     </label>
                   ))}
                 </div>
@@ -3189,18 +2625,8 @@ function InlineAnalytics({ token }) {
                   disabled={chartData.length === 0}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-xl transition-all shadow-md shadow-purple-200 active:scale-95 text-sm font-semibold"
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    ></path>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                   </svg>
                   <span>Export CSV</span>
                 </button>
@@ -3214,30 +2640,17 @@ function InlineAnalytics({ token }) {
             </div>
           </div>
 
-          {/* Middle - Chart Visualization (Takes larger chunk now) */}
-          <div
-            className={`${chartData.length > 0 ? "lg:col-span-7 xl:col-span-7" : "lg:col-span-9 xl:col-span-10"}`}
-          >
+          {/* Middle - Chart Visualization */}
+          <div className={`${chartData.length > 0 ? "lg:col-span-7 xl:col-span-7" : "lg:col-span-9 xl:col-span-10"}`}>
             <div className="bg-white rounded-2xl shadow-lg shadow-purple-900/5 p-6 sm:p-8 border border-gray-100 min-h-[600px] flex flex-col">
               <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-50 pb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
-                    Data Overview
-                  </h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Real-time visual representation of your filtered data.
-                  </p>
+                  <h2 className="text-2xl font-bold text-gray-800 tracking-tight">Data Overview</h2>
+                  <p className="text-sm text-gray-500 mt-1">Real-time visual representation of your filtered data.</p>
                 </div>
-
                 {selectedFields.length > 0 && (
                   <div className="px-4 py-1.5 bg-purple-50 text-purple-700 rounded-full text-xs font-semibold border border-purple-100">
-                    Analysis:{" "}
-                    {selectedFields
-                      .map((f) => {
-                        const field = availableFields.find((af) => af.id === f);
-                        return field ? field.label : f;
-                      })
-                      .join(" vs ")}
+                    Analysis: {selectedFields.map((f) => { const field = availableFields.find((af) => af.id === f); return field ? field.label : f; }).join(" vs ")}
                   </div>
                 )}
               </div>
@@ -3246,49 +2659,25 @@ function InlineAnalytics({ token }) {
               {selectedFields.length > 0 && (
                 <div className="mb-6 bg-gray-50/50 p-4 rounded-xl border border-dashed border-gray-200">
                   <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                      ></path>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                     </svg>
                     Reorder Axes Priority
                   </h3>
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <Droppable droppableId="fields" direction="horizontal">
                       {(provided) => (
-                        <div
-                          {...provided.droppableProps}
-                          ref={provided.innerRef}
-                          className="flex flex-wrap gap-3"
-                        >
+                        <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-wrap gap-3">
                           {selectedFields.map((fieldId, index) => {
-                            const field = availableFields.find(
-                              (f) => f.id === fieldId,
-                            );
+                            const field = availableFields.find((f) => f.id === fieldId);
                             return (
-                              <Draggable
-                                key={fieldId}
-                                draggableId={fieldId}
-                                index={index}
-                              >
+                              <Draggable key={fieldId} draggableId={fieldId} index={index}>
                                 {(provided, snapshot) => (
                                   <div
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
-                                    className={`px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-semibold shadow-sm hover:shadow-md transition-all cursor-move flex items-center gap-2 ${
-                                      snapshot.isDragging
-                                        ? "shadow-lg ring-2 ring-purple-400 scale-105 z-10"
-                                        : "hover:border-purple-300"
-                                    }`}
+                                    className={`px-4 py-2 bg-white border border-purple-200 text-purple-700 rounded-lg text-sm font-semibold shadow-sm hover:shadow-md transition-all cursor-move flex items-center gap-2 ${snapshot.isDragging ? "shadow-lg ring-2 ring-purple-400 scale-105 z-10" : "hover:border-purple-300"}`}
                                   >
                                     <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
                                     {field ? field.label : fieldId}
@@ -3312,52 +2701,24 @@ function InlineAnalytics({ token }) {
                     <div className="relative">
                       <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-100 border-t-purple-600"></div>
                       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-purple-600">
-                        <svg
-                          className="w-6 h-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z"
-                          />
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
                       </div>
                     </div>
-                    <p className="text-gray-500 mt-6 font-medium animate-pulse">
-                      Processing analytics data...
-                    </p>
+                    <p className="text-gray-500 mt-6 font-medium animate-pulse">Processing analytics data...</p>
                   </div>
                 ) : error ? (
                   <div className="flex items-center justify-center h-64 sm:h-96">
                     <div className="text-center p-8 bg-red-50/50 rounded-2xl border border-red-100 max-w-md">
                       <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg
-                          className="w-8 h-8 text-red-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
+                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                       </div>
-                      <h3 className="text-lg font-bold text-gray-800 mb-2">
-                        Unable to load data
-                      </h3>
-                      <p className="text-red-600/80 font-medium text-sm mb-6">
-                        {error}
-                      </p>
-                      <button
-                        onClick={fetchAnalyticsData}
-                        className="px-6 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-xl transition font-semibold text-sm shadow-sm"
-                      >
+                      <h3 className="text-lg font-bold text-gray-800 mb-2">Unable to load data</h3>
+                      <p className="text-red-600/80 font-medium text-sm mb-6">{error}</p>
+                      <button onClick={fetchAnalyticsData} className="px-6 py-2.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 rounded-xl transition font-semibold text-sm shadow-sm">
                         Try Again
                       </button>
                     </div>
@@ -3368,88 +2729,14 @@ function InlineAnalytics({ token }) {
                       data={[chartDataForPlot]}
                       layout={{
                         autosize: true,
-                        title: {
-                          text: `${selectedFields[0] ? availableFields.find((f) => f.id === selectedFields[0])?.label || selectedFields[0] : "Data"} Distribution`,
-                          font: {
-                            size: 20,
-                            color: "#1f2937",
-                            family: "Inter, sans-serif",
-                            weight: 600,
-                          },
-                          y: 0.95,
-                        },
+                        title: { text: `${selectedFields[0] ? availableFields.find((f) => f.id === selectedFields[0])?.label || selectedFields[0] : "Data"} Distribution`, font: { size: 20, color: "#1f2937", family: "Inter, sans-serif", weight: 600 }, y: 0.95 },
                         ...(chartType === "pie"
-                          ? {
-                              showlegend: true,
-                              legend: {
-                                orientation: "v",
-                                x: 1,
-                                y: 0.5,
-                                font: { size: 12, color: "#4b5563" },
-                                bgcolor: "rgba(255,255,255,0.5)",
-                                bordercolor: "rgba(0,0,0,0.05)",
-                                borderwidth: 1,
-                              },
-                              margin: { l: 20, r: 20, t: 80, b: 20 },
-                            }
-                          : {
-                              xaxis: {
-                                title: selectedFields[0]
-                                  ? availableFields.find(
-                                      (f) => f.id === selectedFields[0],
-                                    )?.label || selectedFields[0]
-                                  : "Category",
-                                titlefont: {
-                                  size: 14,
-                                  color: "#4b5563",
-                                  weight: 600,
-                                },
-                                tickfont: { size: 12, color: "#6b7280" },
-                                gridcolor: "#f3f4f6",
-                                linecolor: "#e5e7eb",
-                                zerolinecolor: "#e5e7eb",
-                              },
-                              yaxis: {
-                                title: "Count",
-                                titlefont: {
-                                  size: 14,
-                                  color: "#4b5563",
-                                  weight: 600,
-                                },
-                                tickfont: { size: 12, color: "#6b7280" },
-                                gridcolor: "#f3f4f6",
-                                linecolor: "#e5e7eb",
-                                zerolinecolor: "#e5e7eb",
-                              },
-                              margin: { l: 60, r: 40, t: 80, b: 60 },
-                            }),
-                        paper_bgcolor: "white",
-                        plot_bgcolor: "white",
-                        font: { family: "Inter, sans-serif" },
-                        hovermode: "closest",
+                          ? { showlegend: true, legend: { orientation: "v", x: 1, y: 0.5, font: { size: 12, color: "#4b5563" }, bgcolor: "rgba(255,255,255,0.5)", bordercolor: "rgba(0,0,0,0.05)", borderwidth: 1 }, margin: { l: 20, r: 20, t: 80, b: 20 } }
+                          : { xaxis: { title: selectedFields[0] ? availableFields.find((f) => f.id === selectedFields[0])?.label || selectedFields[0] : "Category", titlefont: { size: 14, color: "#4b5563", weight: 600 }, tickfont: { size: 12, color: "#6b7280" }, gridcolor: "#f3f4f6", linecolor: "#e5e7eb", zerolinecolor: "#e5e7eb" }, yaxis: { title: "Count", titlefont: { size: 14, color: "#4b5563", weight: 600 }, tickfont: { size: 12, color: "#6b7280" }, gridcolor: "#f3f4f6", linecolor: "#e5e7eb", zerolinecolor: "#e5e7eb" }, margin: { l: 60, r: 40, t: 80, b: 60 } }),
+                        paper_bgcolor: "white", plot_bgcolor: "white", font: { family: "Inter, sans-serif" }, hovermode: "closest",
                       }}
-                      config={{
-                        displayModeBar: true,
-                        displaylogo: false,
-                        modeBarButtonsToRemove: [
-                          "pan2d",
-                          "lasso2d",
-                          "select2d",
-                        ],
-                        responsive: true,
-                        toImageButtonOptions: {
-                          format: "png",
-                          filename: "analytics_chart",
-                          height: 600,
-                          width: 1000,
-                          scale: 2,
-                        },
-                      }}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        minHeight: "500px",
-                      }}
+                      config={{ displayModeBar: true, displaylogo: false, modeBarButtonsToRemove: ["pan2d", "lasso2d", "select2d"], responsive: true, toImageButtonOptions: { format: "png", filename: "analytics_chart", height: 600, width: 1000, scale: 2 } }}
+                      style={{ width: "100%", height: "100%", minHeight: "500px" }}
                       className="w-full h-full"
                     />
                   </div>
@@ -3457,27 +2744,12 @@ function InlineAnalytics({ token }) {
                   <div className="flex items-center justify-center h-64 sm:h-96">
                     <div className="text-center p-8 bg-gray-50/50 rounded-2xl border border-gray-100">
                       <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <svg
-                          className="w-8 h-8 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
-                          />
+                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                         </svg>
                       </div>
-                      <h4 className="text-gray-900 font-semibold mb-2">
-                        No Data Visualized
-                      </h4>
-                      <p className="text-gray-500 max-w-xs mx-auto text-sm">
-                        Select fields from the left sidebar and apply filters to
-                        generate your analytics chart.
-                      </p>
+                      <h4 className="text-gray-900 font-semibold mb-2">No Data Visualized</h4>
+                      <p className="text-gray-500 max-w-xs mx-auto text-sm">Select fields from the left sidebar and apply filters to generate your analytics chart.</p>
                     </div>
                   </div>
                 )}
@@ -3485,58 +2757,34 @@ function InlineAnalytics({ token }) {
             </div>
           </div>
 
-          {/* Right Sidebar - Data Table (Conditional) - Takes 3 columns */}
+          {/* Right Sidebar - Data Table (Conditional) */}
           {chartData.length > 0 && (
             <div className="lg:col-span-2 xl:col-span-3">
               <div className="bg-white rounded-2xl shadow-lg shadow-purple-900/5 p-0 sticky top-6 border border-gray-100 overflow-hidden flex flex-col h-[calc(100vh-6rem)] max-h-[800px]">
                 <div className="p-5 border-b border-gray-100 bg-gray-50/30">
                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                    <svg
-                      className="w-5 h-5 text-purple-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M3 10h18M3 14h18m-9-4v8m-7-4h14M4 6h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z"
-                      ></path>
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M3 14h18m-9-4v8m-7-4h14M4 6h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1z"></path>
                     </svg>
                     Raw Data
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {chartData.length} total records found
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1">{chartData.length} total records found</p>
                 </div>
-
                 <div className="overflow-y-auto flex-grow custom-scrollbar">
                   <table className="min-w-full divide-y divide-gray-100">
                     <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50">
-                          Category
-                        </th>
-                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50">
-                          Count
-                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50">Category</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50">Count</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-50">
                       {chartData.slice(0, 50).map((item, index) => (
-                        <tr
-                          key={index}
-                          className="hover:bg-purple-50/50 transition-colors"
-                        >
+                        <tr key={index} className="hover:bg-purple-50/50 transition-colors">
                           <td className="px-4 py-3 text-gray-700 text-sm font-medium break-words">
-                            {typeof item._id === "object"
-                              ? JSON.stringify(item._id)
-                              : String(item._id || "Unknown")}
+                            {typeof item._id === "object" ? JSON.stringify(item._id) : String(item._id || "Unknown")}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-gray-900 font-bold text-sm text-right">
-                            {item.count || 0}
-                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-gray-900 font-bold text-sm text-right">{item.count || 0}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -3544,9 +2792,7 @@ function InlineAnalytics({ token }) {
                 </div>
                 {chartData.length > 50 && (
                   <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
-                    <p className="text-xs text-gray-500 font-medium">
-                      Showing top 50 rows. Export CSV for full data.
-                    </p>
+                    <p className="text-xs text-gray-500 font-medium">Showing top 50 rows. Export CSV for full data.</p>
                   </div>
                 )}
               </div>
@@ -3557,3 +2803,4 @@ function InlineAnalytics({ token }) {
     </div>
   );
 }
+
