@@ -280,11 +280,11 @@ jobs:
           fi
 
   # ============================================================
-  # JOB 3: Deploy to QA VM
+  # JOB 3: Deploy to QA VM (Self-Hosted Runner)
   # ============================================================
   deploy-qa:
     name: Deploy to QA VM
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build-and-push
     if: github.ref == 'refs/heads/QA'
 
@@ -292,32 +292,20 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          ssh-private-key: ${{ secrets.VM_NEW_SSH_PRIVATE_KEY }}
-
-      - name: Add QA VM to known hosts
-        run: |
-          echo "Preparing SSH configuration for ${{ secrets.VM_NEW_HOST }}"
-          mkdir -p ~/.ssh
-          # Skip host key verification for this deployment
-          echo "Host ${{ secrets.VM_NEW_HOST }}" >> ~/.ssh/config
-          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
-          echo "  UserKnownHostsFile=/dev/null" >> ~/.ssh/config
-          echo "SSH config updated"
-
-      - name: Test SSH Connection
-        run: |
-          echo "Testing SSH connection to ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}"
-          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} "echo 'SSH connection successful' && whoami && pwd"
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # ----------------------------------------------------------
       # Generate backend/.env from GitHub Secrets (QA environment)
       # ----------------------------------------------------------
       - name: Generate .env file for QA
         run: |
-          cat > backend.env << 'EOF'
+          mkdir -p ~/community/backend
+          cat > ~/community/backend/.env << 'EOF'
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           JWT_ALGO=${{ secrets.JWT_ALGO }}
           JWT_EXP_MIN=${{ secrets.JWT_EXP_MIN }}
@@ -351,14 +339,15 @@ jobs:
           RERANKER_MODEL=BAAI/bge-reranker-v2-m3
           USE_RERANKER=true
           EOF
+          echo "✅ .env file created"
 
       # ----------------------------------------------------------
-      # Inject real GHCR image names into compose file
+      # Prepare docker-compose and nginx config
       # ----------------------------------------------------------
-      - name: Prepare deploy files for QA
+      - name: Prepare deployment files
         run: |
-          mkdir -p /tmp/deploy/nginx
-
+          mkdir -p ~/community/nginx
+          
           BACKEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest"
           FRONTEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest"
           CELERY_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-celery:latest"
@@ -366,110 +355,50 @@ jobs:
           sed -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-backend:latest|$BACKEND_IMAGE|g" \
               -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-frontend:latest|$FRONTEND_IMAGE|g" \
               -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-celery:latest|$CELERY_IMAGE|g" \
-              docker-compose.prod.yml > /tmp/deploy/docker-compose.yml
+              docker-compose.prod.yml > ~/community/docker-compose.yml
 
-          cp backend.env             /tmp/deploy/backend.env
-          # Use the ROOT nginx.conf (not frontend/nginx.conf)
-          cp nginx/nginx.conf        /tmp/deploy/nginx/nginx.conf
+          cp nginx/nginx.conf ~/community/nginx/nginx.conf
+          echo "✅ Deployment files prepared"
 
       # ----------------------------------------------------------
-      # Copy files to QA VM
+      # Deploy containers
       # ----------------------------------------------------------
-      - name: Copy files to QA VM
+      - name: Deploy containers
         run: |
-          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
-            "mkdir -p /tmp/deploy/nginx"
-
-          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              /tmp/deploy/backend.env \
-              /tmp/deploy/docker-compose.yml \
-              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/
-
-          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              /tmp/deploy/nginx/nginx.conf \
-              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/nginx/
+          cd ~/community
+          
+          echo "🛑 Stopping existing containers..."
+          docker compose down --remove-orphans || true
+          
+          echo "📦 Pulling latest images..."
+          docker compose pull
+          
+          echo "🚀 Starting all services..."
+          docker compose up -d --remove-orphans --force-recreate
+          
+          echo "🧹 Cleaning up old images..."
+          docker image prune -af --filter "until=168h" || true
+          
+          echo "⏳ Waiting 30s for services to initialize..."
+          sleep 30
+          
+          echo "=== Container Status ==="
+          docker compose ps
+          
+          echo "✅ QA Deployment complete!"
 
       # ----------------------------------------------------------
-      # Run deployment on QA VM
+      # Health check
       # ----------------------------------------------------------
-      - name: Deploy on QA VM
+      - name: Health check
         run: |
-          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} << 'ENDSSH'
-            set -e
-
-            PROJECT_DIR="$HOME/community"
-            mkdir -p "$PROJECT_DIR/backend"
-            mkdir -p "$PROJECT_DIR/nginx"
-
-            echo "📁 Project dir: $PROJECT_DIR"
-            cd "$PROJECT_DIR"
-
-            # Fix Docker credential store (needed on some Linux VMs)
-            mkdir -p ~/.docker
-            echo '{"credsStore":""}' > ~/.docker/config.json
-
-            # Login to GHCR
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-            # Place all config files
-            cp /tmp/deploy/backend.env          backend/.env
-            cp /tmp/deploy/docker-compose.yml   docker-compose.yml
-            cp /tmp/deploy/nginx/nginx.conf     nginx/nginx.conf
-            echo "✅ Config files in place"
-
-            # Stop all existing containers cleanly
-            echo "🛑 Stopping existing containers..."
-            docker compose down --remove-orphans || true
-            docker rm -f gisulmatch-nginx gisulmatch-backend gisulmatch-frontend gisulmatch-worker gisulmatch-redis 2>/dev/null || true
-
-            # Pull fresh images from GHCR
-            echo "📦 Pulling latest images..."
-            docker compose pull
-
-            # Start everything
-            echo "🚀 Starting all services..."
-            docker compose up -d
-
-            # Clean up old/unused images to save disk space
-            echo "🧹 Cleaning up old images..."
-            docker image prune -af --filter "until=168h" || true
-
-            # Give containers time to initialize
-            echo "⏳ Waiting 45s for services to initialize..."
-            sleep 45
-
-            echo "=== Container Status ==="
-            docker compose ps
-
-            echo "=== Nginx container logs ==="
-            docker logs gisulmatch-nginx --tail=20 || true
-
-            echo "=== Backend container logs ==="
-            docker logs gisulmatch-backend --tail=20 || true
-
-            # Verify nginx can reach backend internally
-            echo "🔍 Testing internal backend connectivity..."
-            docker exec gisulmatch-nginx wget -qO- http://backend:8000/health \
-              && echo "✅ Backend reachable from nginx" \
-              || echo "⚠️  Backend not yet reachable — may still be starting"
-
-            echo "✅ QA Deployment complete!"
-          ENDSSH
-
-      # ----------------------------------------------------------
-      # Final health check from GitHub Actions runner
-      # ----------------------------------------------------------
-      - name: Health check for QA
-        run: |
-          echo "⏳ Waiting 60s for backend to fully initialize..."
-          sleep 60
+          echo "⏳ Waiting 30s for backend to fully initialize..."
+          sleep 30
           response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.VM_NEW_HEALTH_CHECK_URL }} || echo "000")
           echo "Health check HTTP status: $response"
           if [ "$response" = "200" ]; then
             echo "✅ QA Deployment verified — site is live!"
           else
             echo "⚠️ Health check returned $response — dumping logs..."
-            ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
-              "cd \$HOME/community && docker compose logs --tail=40"
-            exit 1
+            cd ~/community && docker compose logs --tail=40
           fi
