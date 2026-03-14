@@ -427,20 +427,3 @@ jobs:
 
             echo QA Deployment complete!
           ENDSSH
-
-      # ----------------------------------------------------------
-      # Health check
-      # ----------------------------------------------------------
-      - name: Health check for QA
-        run: |
-          echo "⏳ Waiting 30s for backend to fully initialize..."
-          sleep 30
-          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.VM_NEW_HEALTH_CHECK_URL }} || echo "000")
-          echo "Health check HTTP status: $response"
-          if [ "$response" = "200" ]; then
-            echo "✅ QA Deployment verified — site is live!"
-          else
-            echo "⚠️ Health check returned $response — dumping logs..."
-            ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
-              "cd C:\Users\Administrator\community && docker compose logs --tail=40"
-          fi
