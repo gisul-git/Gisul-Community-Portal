@@ -299,18 +299,18 @@ jobs:
 
       - name: Add QA VM to known hosts
         run: |
-          echo "Adding VM host to known_hosts: ${{ secrets.VM_NEW_HOST }}"
+          echo "Preparing SSH configuration for ${{ secrets.VM_NEW_HOST }}"
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.VM_NEW_HOST }} >> ~/.ssh/known_hosts 2>&1 || {
-            echo "ssh-keyscan failed, trying without -H flag..."
-            ssh-keyscan ${{ secrets.VM_NEW_HOST }} >> ~/.ssh/known_hosts 2>&1
-          }
-          echo "Known hosts updated successfully"
+          # Skip host key verification for this deployment
+          echo "Host ${{ secrets.VM_NEW_HOST }}" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+          echo "  UserKnownHostsFile=/dev/null" >> ~/.ssh/config
+          echo "SSH config updated"
 
       - name: Test SSH Connection
         run: |
           echo "Testing SSH connection to ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}"
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} "echo 'SSH connection successful' && whoami && pwd"
+          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} "echo 'SSH connection successful' && whoami && pwd"
 
       # ----------------------------------------------------------
       # Generate backend/.env from GitHub Secrets (QA environment)
@@ -380,11 +380,13 @@ jobs:
           ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
             "mkdir -p /tmp/deploy/nginx"
 
-          scp /tmp/deploy/backend.env \
+          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              /tmp/deploy/backend.env \
               /tmp/deploy/docker-compose.yml \
               ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/
 
-          scp /tmp/deploy/nginx/nginx.conf \
+          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              /tmp/deploy/nginx/nginx.conf \
               ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/nginx/
 
       # ----------------------------------------------------------
