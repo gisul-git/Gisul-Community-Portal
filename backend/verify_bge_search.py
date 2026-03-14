@@ -14,10 +14,9 @@ print("=" * 70)
 
 # Test 1: Check embedding service configuration
 print("\n1. Checking Embedding Service Configuration...")
-from services.embeddings import get_embedding_service, EMBEDDING_MODEL_NAME, USE_OPENAI_FALLBACK
+from services.embeddings import get_embedding_service, EMBEDDING_MODEL_NAME
 
 print(f"   Model Name: {EMBEDDING_MODEL_NAME}")
-print(f"   Use OpenAI Fallback: {USE_OPENAI_FALLBACK}")
 
 embedding_service = get_embedding_service()
 print(f"   Loaded Model: {embedding_service.model_name}")
@@ -98,26 +97,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 embedding_model_env = os.getenv("EMBEDDING_MODEL")
-use_openai_env = os.getenv("USE_OPENAI_EMBEDDINGS")
 
 print(f"   EMBEDDING_MODEL: {embedding_model_env}")
-print(f"   USE_OPENAI_EMBEDDINGS: {use_openai_env}")
 
 if embedding_model_env == "BAAI/bge-large-en-v1.5":
     print("   ✅ PASS: Environment configured for BGE")
-elif embedding_model_env == "text-embedding-3-small":
-    print("   ❌ FAIL: Environment configured for OpenAI")
-    print("   ACTION REQUIRED: Update .env file")
 elif embedding_model_env is None:
     print("   ⚠️  WARNING: EMBEDDING_MODEL not set (using default)")
 else:
     print(f"   ℹ️  INFO: Using custom model: {embedding_model_env}")
-
-if use_openai_env == "false":
-    print("   ✅ PASS: OpenAI fallback disabled")
-elif use_openai_env == "true":
-    print("   ❌ FAIL: OpenAI fallback enabled")
-    print("   ACTION REQUIRED: Set USE_OPENAI_EMBEDDINGS=false in .env")
 
 # Test 6: Test search functions
 print("\n6. Testing Search Functions...")
@@ -173,7 +161,6 @@ else:
     print("   1. Run: python reset_vector_index.py")
     print("   2. Check backend/.env has:")
     print("      EMBEDDING_MODEL=BAAI/bge-large-en-v1.5")
-    print("      USE_OPENAI_EMBEDDINGS=false")
     print("   3. Restart the server")
 
 print("=" * 70)
