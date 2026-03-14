@@ -370,14 +370,14 @@ jobs:
       # ----------------------------------------------------------
       - name: Copy files to QA VM
         run: |
-          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} "mkdir -p /tmp/deploy/nginx"
+          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} "if not exist C:\\temp\\deploy\\nginx mkdir C:\\temp\\deploy\\nginx"
           
           scp /tmp/deploy/backend.env \
               /tmp/deploy/docker-compose.yml \
-              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/
+              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:C:/temp/deploy/
           
           scp /tmp/deploy/nginx/nginx.conf \
-              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/nginx/
+              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:C:/temp/deploy/nginx/
 
       # ----------------------------------------------------------
       # Deploy on QA VM
@@ -387,50 +387,45 @@ jobs:
           ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} << 'ENDSSH'
             set -e
 
-            PROJECT_DIR="$HOME/community"
-            mkdir -p "$PROJECT_DIR/backend"
-            mkdir -p "$PROJECT_DIR/nginx"
+            cd C:\Users\Administrator\community
+            if not exist backend mkdir backend
+            if not exist nginx mkdir nginx
 
-            echo "📁 Project dir: $PROJECT_DIR"
-            cd "$PROJECT_DIR"
+            echo Project dir: C:\Users\Administrator\community
 
-            # Fix Docker credential store
-            mkdir -p ~/.docker
-            echo '{"credsStore":""}' > ~/.docker/config.json
+            REM Login to GHCR
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            # Login to GHCR
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            REM Place config files
+            copy C:\temp\deploy\backend.env backend\.env
+            copy C:\temp\deploy\docker-compose.yml docker-compose.yml
+            copy C:\temp\deploy\nginx\nginx.conf nginx\nginx.conf
+            echo Config files in place
 
-            # Place config files
-            cp /tmp/deploy/backend.env backend/.env
-            cp /tmp/deploy/docker-compose.yml docker-compose.yml
-            cp /tmp/deploy/nginx/nginx.conf nginx/nginx.conf
-            echo "✅ Config files in place"
+            REM Stop existing containers
+            echo Stopping existing containers...
+            docker compose down --remove-orphans
 
-            # Stop existing containers
-            echo "🛑 Stopping existing containers..."
-            docker compose down --remove-orphans || true
-
-            # Pull fresh images
-            echo "📦 Pulling latest images..."
+            REM Pull fresh images
+            echo Pulling latest images...
             docker compose pull
 
-            # Start services
-            echo "🚀 Starting all services..."
+            REM Start services
+            echo Starting all services...
             docker compose up -d --remove-orphans --force-recreate
 
-            # Cleanup
-            echo "🧹 Cleaning up old images..."
-            docker image prune -af --filter "until=168h" || true
+            REM Cleanup
+            echo Cleaning up old images...
+            docker image prune -af --filter "until=168h"
 
-            # Wait for initialization
-            echo "⏳ Waiting 45s for services to initialize..."
-            sleep 45
+            REM Wait for initialization
+            echo Waiting 45s for services to initialize...
+            timeout /t 45 /nobreak
 
-            echo "=== Container Status ==="
+            echo Container Status
             docker compose ps
 
-            echo "✅ QA Deployment complete!"
+            echo QA Deployment complete!
           ENDSSH
 
       # ----------------------------------------------------------
@@ -447,5 +442,5 @@ jobs:
           else
             echo "⚠️ Health check returned $response — dumping logs..."
             ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
-              "cd \$HOME/community && docker compose logs --tail=40"
+              "cd C:\Users\Administrator\community && docker compose logs --tail=40"
           fi
