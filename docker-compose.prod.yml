@@ -8,25 +8,6 @@ version: "3.9"
 services:
 
   # ----------------------------------------------------------
-  # Nginx Reverse Proxy (handles SSL + routing)
-  # ----------------------------------------------------------
-  nginx:
-    image: mirror.gcr.io/library/nginx:alpine
-    container_name: gisulmatch-nginx
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      - backend
-      - frontend
-    networks:
-      - gisulmatch_net
-
-  # ----------------------------------------------------------
   # Backend (FastAPI — uvicorn on port 8000)
   # ----------------------------------------------------------
   backend:
@@ -34,7 +15,7 @@ services:
     container_name: gisulmatch-backend
     restart: always
     ports:
-      - "6006:8000"
+      - "8006:8000"
     env_file:
       - backend/.env
     environment:
@@ -54,7 +35,7 @@ services:
     container_name: gisulmatch-worker
     restart: always
     ports:
-      - "6008:8000"
+      - "8008:8000"
     depends_on:
       - redis
       - backend
@@ -77,9 +58,7 @@ services:
     container_name: gisulmatch-frontend
     restart: always
     ports:
-      - "6000:80"
-    depends_on:
-      - backend
+      - "8080:80"
     networks:
       - gisulmatch_net
 
