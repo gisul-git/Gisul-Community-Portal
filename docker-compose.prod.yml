@@ -15,7 +15,7 @@ services:
     container_name: gisulmatch-backend
     restart: always
     ports:
-      - "8006:8000"
+      - "6006:8000"
     env_file:
       - backend/.env
     environment:
@@ -35,7 +35,7 @@ services:
     container_name: gisulmatch-worker
     restart: always
     ports:
-      - "8008:8000"
+      - "6008:8000"
     depends_on:
       - redis
       - backend
@@ -58,7 +58,7 @@ services:
     container_name: gisulmatch-frontend
     restart: always
     ports:
-      - "8080:80"
+      - "6080:80"
     networks:
       - gisulmatch_net
 
