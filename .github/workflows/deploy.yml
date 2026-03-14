@@ -399,8 +399,13 @@ jobs:
 
             echo Project dir: C:\Users\Administrator\community
 
-            REM Login to GHCR (ignore credential store errors)
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin 2>nul || echo Continuing despite login warning...
+            REM Fix Docker credential store issue
+            if not exist %USERPROFILE%\.docker mkdir %USERPROFILE%\.docker
+            echo {"credsStore":""} > %USERPROFILE%\.docker\config.json
+
+            REM Login to GHCR
+            echo Logging into GHCR...
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             REM Place config files (use /Y to overwrite without prompting)
             copy /Y C:\temp\deploy\backend.env backend\.env
@@ -430,9 +435,9 @@ jobs:
             echo Cleaning up old images...
             docker image prune -af --filter "until=168h" 2>nul || echo Cleanup done
 
-            REM Wait for initialization
+            REM Wait for initialization (use ping instead of timeout to avoid redirection issues)
             echo Waiting 45s for services to initialize...
-            timeout /t 45 /nobreak >nul
+            ping 127.0.0.1 -n 46 > nul
 
             echo Container Status:
             docker compose ps
