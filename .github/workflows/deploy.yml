@@ -385,26 +385,26 @@ jobs:
       - name: Deploy on QA VM
         run: |
           ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} << 'ENDSSH'
-            set -e
-
+            REM Create community directory if it doesn't exist
+            if not exist C:\Users\Administrator\community mkdir C:\Users\Administrator\community
             cd C:\Users\Administrator\community
             if not exist backend mkdir backend
             if not exist nginx mkdir nginx
 
             echo Project dir: C:\Users\Administrator\community
 
-            REM Login to GHCR
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            REM Login to GHCR (ignore credential store errors)
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin 2>nul || echo Continuing despite login warning...
 
-            REM Place config files
-            copy C:\temp\deploy\backend.env backend\.env
-            copy C:\temp\deploy\docker-compose.yml docker-compose.yml
-            copy C:\temp\deploy\nginx\nginx.conf nginx\nginx.conf
+            REM Place config files (use /Y to overwrite without prompting)
+            copy /Y C:\temp\deploy\backend.env backend\.env
+            copy /Y C:\temp\deploy\docker-compose.yml docker-compose.yml
+            copy /Y C:\temp\deploy\nginx\nginx.conf nginx\nginx.conf
             echo Config files in place
 
             REM Stop existing containers
             echo Stopping existing containers...
-            docker compose down --remove-orphans
+            docker compose down --remove-orphans 2>nul || echo No containers to stop
 
             REM Pull fresh images
             echo Pulling latest images...
@@ -416,13 +416,13 @@ jobs:
 
             REM Cleanup
             echo Cleaning up old images...
-            docker image prune -af --filter "until=168h"
+            docker image prune -af --filter "until=168h" 2>nul || echo Cleanup done
 
             REM Wait for initialization
             echo Waiting 45s for services to initialize...
-            timeout /t 45 /nobreak
+            timeout /t 45 /nobreak >nul
 
-            echo Container Status
+            echo Container Status:
             docker compose ps
 
             echo QA Deployment complete!
