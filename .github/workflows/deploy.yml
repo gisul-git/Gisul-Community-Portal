@@ -1,10 +1,11 @@
-name: Deploy to Production
+name: Deploy to Environment
 
 on:
   push:
     branches:
       - main
       - master
+      - QA
   workflow_dispatch:
 
 env:
@@ -99,10 +100,10 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ============================================================
-  # JOB 2: Deploy to VM
+  # JOB 2: Deploy to Production VM
   # ============================================================
-  deploy:
-    name: Deploy to VM
+  deploy-production:
+    name: Deploy to Production VM
     runs-on: ubuntu-latest
     needs: build-and-push
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -155,8 +156,7 @@ jobs:
           RATE_LIMIT_REQUESTS=5
           RATE_LIMIT_WINDOW=60
           CELERY_PURGE_ON_STARTUP=false
-          EMBEDDING_MODEL=text-embedding-3-small
-          USE_OPENAI_EMBEDDINGS=true
+          EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
           RERANKER_MODEL=BAAI/bge-reranker-v2-m3
           USE_RERANKER=true
           EOF
@@ -278,5 +278,189 @@ jobs:
             echo "⚠️ Health check returned $response — dumping logs..."
             ssh ${{ secrets.VM_SSH_USER }}@${{ secrets.SSH_HOST }} \
               "cd \$HOME/gisulmatch && docker compose logs --tail=40"
+            exit 1
+          fi
+
+  # ============================================================
+  # JOB 3: Deploy to QA VM
+  # ============================================================
+  deploy-qa:
+    name: Deploy to QA VM
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/QA'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VM_NEW_SSH_PRIVATE_KEY }}
+
+      - name: Add QA VM to known hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.VM_NEW_HOST }} >> ~/.ssh/known_hosts
+
+      # ----------------------------------------------------------
+      # Generate backend/.env from GitHub Secrets (QA environment)
+      # ----------------------------------------------------------
+      - name: Generate .env file for QA
+        run: |
+          cat > backend.env << 'EOF'
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          JWT_ALGO=${{ secrets.JWT_ALGO }}
+          JWT_EXP_MIN=${{ secrets.JWT_EXP_MIN }}
+          MONGO_URI=${{ secrets.VM_NEW_MONGO_URI }}
+          MONGO_DB_NAME=${{ secrets.VM_NEW_MONGO_DB_NAME }}
+          OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+          REDIS_URL=redis://redis:6379/0
+          AWS_REGION=${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          EMAIL_FROM=${{ secrets.EMAIL_FROM }}
+          EMAIL_FROM_NAME=${{ secrets.EMAIL_FROM_NAME }}
+          FRONTEND_URL=${{ secrets.VM_NEW_FRONTEND_URL }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          MICROSOFT_CLIENT_ID=${{ secrets.MICROSOFT_CLIENT_ID }}
+          MICROSOFT_CLIENT_SECRET=${{ secrets.MICROSOFT_CLIENT_SECRET }}
+          CORS_ALLOWED_ORIGINS=${{ secrets.VM_NEW_CORS_ORIGINS }}
+          CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,OPTIONS
+          CORS_ALLOWED_HEADERS=*
+          CORS_ALLOW_CREDENTIALS=true
+          ENVIRONMENT=qa
+          BCRYPT_ROUNDS=${{ secrets.BCRYPT_ROUNDS }}
+          MAX_FAILED_ATTEMPTS=5
+          LOCKOUT_DURATION_MINUTES=15
+          ADMIN_MAX_ACTIVE=3
+          RATE_LIMIT_REQUESTS=5
+          RATE_LIMIT_WINDOW=60
+          CELERY_PURGE_ON_STARTUP=false
+          EMBEDDING_MODEL=BAAI/bge-large-en-v1.5
+          RERANKER_MODEL=BAAI/bge-reranker-v2-m3
+          USE_RERANKER=true
+          EOF
+
+      # ----------------------------------------------------------
+      # Inject real GHCR image names into compose file
+      # ----------------------------------------------------------
+      - name: Prepare deploy files for QA
+        run: |
+          mkdir -p /tmp/deploy/nginx
+
+          BACKEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:latest"
+          FRONTEND_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest"
+          CELERY_IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-celery:latest"
+
+          sed -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-backend:latest|$BACKEND_IMAGE|g" \
+              -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-frontend:latest|$FRONTEND_IMAGE|g" \
+              -e "s|ghcr.io/REPLACE_WITH_OWNER/gisul-community-celery:latest|$CELERY_IMAGE|g" \
+              docker-compose.prod.yml > /tmp/deploy/docker-compose.yml
+
+          cp backend.env             /tmp/deploy/backend.env
+          # Use the ROOT nginx.conf (not frontend/nginx.conf)
+          cp nginx/nginx.conf        /tmp/deploy/nginx/nginx.conf
+
+      # ----------------------------------------------------------
+      # Copy files to QA VM
+      # ----------------------------------------------------------
+      - name: Copy files to QA VM
+        run: |
+          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
+            "mkdir -p /tmp/deploy/nginx"
+
+          scp /tmp/deploy/backend.env \
+              /tmp/deploy/docker-compose.yml \
+              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/
+
+          scp /tmp/deploy/nginx/nginx.conf \
+              ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }}:/tmp/deploy/nginx/
+
+      # ----------------------------------------------------------
+      # Run deployment on QA VM
+      # ----------------------------------------------------------
+      - name: Deploy on QA VM
+        run: |
+          ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} << 'ENDSSH'
+            set -e
+
+            PROJECT_DIR="$HOME/gisulmatch-qa"
+            mkdir -p "$PROJECT_DIR/backend"
+            mkdir -p "$PROJECT_DIR/nginx"
+
+            echo "📁 Project dir: $PROJECT_DIR"
+            cd "$PROJECT_DIR"
+
+            # Fix Docker credential store (needed on some Linux VMs)
+            mkdir -p ~/.docker
+            echo '{"credsStore":""}' > ~/.docker/config.json
+
+            # Login to GHCR
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            # Place all config files
+            cp /tmp/deploy/backend.env          backend/.env
+            cp /tmp/deploy/docker-compose.yml   docker-compose.yml
+            cp /tmp/deploy/nginx/nginx.conf     nginx/nginx.conf
+            echo "✅ Config files in place"
+
+            # Stop all existing containers cleanly
+            echo "🛑 Stopping existing containers..."
+            docker compose down --remove-orphans || true
+            docker rm -f gisulmatch-qa-nginx gisulmatch-qa-backend gisulmatch-qa-frontend gisulmatch-qa-worker gisulmatch-qa-redis 2>/dev/null || true
+
+            # Pull fresh images from GHCR
+            echo "📦 Pulling latest images..."
+            docker compose pull
+
+            # Start everything
+            echo "🚀 Starting all services..."
+            docker compose up -d
+
+            # Clean up old/unused images to save disk space
+            echo "🧹 Cleaning up old images..."
+            docker image prune -af --filter "until=168h" || true
+
+            # Give containers time to initialize
+            echo "⏳ Waiting 45s for services to initialize..."
+            sleep 45
+
+            echo "=== Container Status ==="
+            docker compose ps
+
+            echo "=== Nginx container logs ==="
+            docker logs gisulmatch-nginx --tail=20 || docker logs gisulmatch-qa-nginx --tail=20 || true
+
+            echo "=== Backend container logs ==="
+            docker logs gisulmatch-backend --tail=20 || docker logs gisulmatch-qa-backend --tail=20 || true
+
+            # Verify nginx can reach backend internally
+            echo "🔍 Testing internal backend connectivity..."
+            docker exec gisulmatch-nginx wget -qO- http://backend:8000/health \
+              && echo "✅ Backend reachable from nginx" \
+              || docker exec gisulmatch-qa-nginx wget -qO- http://backend:8000/health \
+              && echo "✅ Backend reachable from nginx" \
+              || echo "⚠️  Backend not yet reachable — may still be starting"
+
+            echo "✅ QA Deployment complete!"
+          ENDSSH
+
+      # ----------------------------------------------------------
+      # Final health check from GitHub Actions runner
+      # ----------------------------------------------------------
+      - name: Health check for QA
+        run: |
+          echo "⏳ Waiting 60s for backend to fully initialize..."
+          sleep 60
+          response=$(curl -s -o /dev/null -w "%{http_code}" ${{ secrets.VM_NEW_HEALTH_CHECK_URL }} || echo "000")
+          echo "Health check HTTP status: $response"
+          if [ "$response" = "200" ]; then
+            echo "✅ QA Deployment verified — site is live!"
+          else
+            echo "⚠️ Health check returned $response — dumping logs..."
+            ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
+              "cd \$HOME/gisulmatch-qa && docker compose logs --tail=40"
             exit 1
           fi

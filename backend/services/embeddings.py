@@ -16,10 +16,9 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 # Embedding model configuration
-# Default to BGE embeddings (local model, no API costs)
+# Only local models supported (no API costs)
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL", "BAAI/bge-large-en-v1.5")  # Default to BGE
 EMBEDDING_DIMENSION = None  # Will be set based on model
-USE_OPENAI_FALLBACK = os.getenv("USE_OPENAI_EMBEDDINGS", "false").lower() == "true"  # Default to false
 
 # Cache configuration - Optimized for performance
 EMBEDDING_CACHE: Dict[str, Tuple[np.ndarray, datetime]] = {}
@@ -35,7 +34,7 @@ class EmbeddingService:
         Initialize embedding service.
         
         Args:
-            model_name: Model to use (BAAI/bge-large-en-v1.5 for BGE, text-embedding-3-small for OpenAI, or other sentence-transformers models)
+            model_name: Model to use (BAAI/bge-large-en-v1.5 or other sentence-transformers models)
         """
         self.model_name = model_name or EMBEDDING_MODEL_NAME
         self.model = None
@@ -46,37 +45,15 @@ class EmbeddingService:
     def _initialize_model(self):
         """Initialize the embedding model."""
         try:
-            if self.model_name.startswith("text-embedding"):
-                # Use OpenAI embeddings (only if explicitly requested)
-                from openai import OpenAI
-                api_key = os.getenv("OPENAI_API_KEY")
-                if not api_key:
-                    raise ValueError("OPENAI_API_KEY not set")
-                self.client = OpenAI(api_key=api_key)
-                self.dimension = 1536
-                logger.info(f"✅ Initialized OpenAI embedding model: {self.model_name} ({self.dimension}D)")
-            else:
-                # Use sentence-transformers for local models (BGE, etc.)
-                try:
-                    from sentence_transformers import SentenceTransformer
-                    logger.info(f"🔄 Loading SentenceTransformer model: {self.model_name}")
-                    self.model = SentenceTransformer(self.model_name)
-                    self.dimension = self.model.get_sentence_embedding_dimension()
-                    logger.info(f"✅ Loaded SentenceTransformer model: {self.model_name} ({self.dimension}D)")
-                except (ImportError, ValueError, ModuleNotFoundError) as e:
-                    # Fallback to OpenAI only if USE_OPENAI_FALLBACK is true
-                    if USE_OPENAI_FALLBACK:
-                        logger.info(f"ℹ️ Local embedding model not available, using OpenAI embeddings")
-                        from openai import OpenAI
-                        api_key = os.getenv("OPENAI_API_KEY")
-                        if not api_key:
-                            raise ValueError("OPENAI_API_KEY not set and embedding libraries unavailable")
-                        self.client = OpenAI(api_key=api_key)
-                        self.model_name = "text-embedding-3-small"
-                        self.dimension = 1536
-                        self.model = None
-                    else:
-                        raise ValueError(f"Failed to load local model {self.model_name} and OpenAI fallback is disabled: {e}")
+            from sentence_transformers import SentenceTransformer
+            logger.info(f"🔄 Loading SentenceTransformer model: {self.model_name}")
+            self.model = SentenceTransformer(self.model_name)
+            self.dimension = self.model.get_sentence_embedding_dimension()
+            logger.info(f"✅ Loaded SentenceTransformer model: {self.model_name} ({self.dimension}D)")
+        except (ImportError, ValueError, ModuleNotFoundError) as e:
+            logger.error(f"❌ Failed to load local embedding model {self.model_name}: {e}")
+            logger.error("Please install sentence-transformers: pip install sentence-transformers")
+            raise ValueError(f"Failed to load local model {self.model_name}: {e}")
         except Exception as e:
             logger.error(f"❌ Failed to initialize embedding model: {e}")
             raise
@@ -117,44 +94,22 @@ class EmbeddingService:
         # Generate embeddings for cache misses
         new_embeddings = {}
         if texts_to_embed:
-            if self.model is not None:
-                # Use local model (sentence-transformers)
-                embeddings = self.model.encode(texts_to_embed, normalize_embeddings=normalize)
-                
-                if isinstance(embeddings, np.ndarray):
-                    embeddings_array = embeddings
-                else:
-                    embeddings_array = np.array(embeddings)
-                
-                # Cache and store
-                for text, embedding in zip(texts_to_embed, embeddings_array):
-                    idx = text_indices[texts_to_embed.index(text)]
-                    if normalize and not self._is_normalized(embedding):
-                        embedding = embedding / (np.linalg.norm(embedding) + 1e-8)
-                    new_embeddings[idx] = embedding
-                    if use_cache:
-                        self._cache_embedding(text, embedding)
+            # Use local model (sentence-transformers)
+            embeddings = self.model.encode(texts_to_embed, normalize_embeddings=normalize)
+            
+            if isinstance(embeddings, np.ndarray):
+                embeddings_array = embeddings
             else:
-                # Use OpenAI API
-                from openai import OpenAI
-                if not hasattr(self, 'client'):
-                    api_key = os.getenv("OPENAI_API_KEY")
-                    self.client = OpenAI(api_key=api_key)
-                
-                # Batch API call
-                response = self.client.embeddings.create(
-                    model=self.model_name,
-                    input=texts_to_embed
-                )
-                
-                for text, embedding_data in zip(texts_to_embed, response.data):
-                    idx = text_indices[texts_to_embed.index(text)]
-                    embedding = np.array(embedding_data.embedding, dtype=np.float32)
-                    if normalize:
-                        embedding = embedding / (np.linalg.norm(embedding) + 1e-8)
-                    new_embeddings[idx] = embedding
-                    if use_cache:
-                        self._cache_embedding(text, embedding)
+                embeddings_array = np.array(embeddings)
+            
+            # Cache and store
+            for text, embedding in zip(texts_to_embed, embeddings_array):
+                idx = text_indices[texts_to_embed.index(text)]
+                if normalize and not self._is_normalized(embedding):
+                    embedding = embedding / (np.linalg.norm(embedding) + 1e-8)
+                new_embeddings[idx] = embedding
+                if use_cache:
+                    self._cache_embedding(text, embedding)
         
         # Combine cached and new embeddings in correct order
         result = []
