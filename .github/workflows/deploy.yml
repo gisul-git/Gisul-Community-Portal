@@ -3,8 +3,6 @@ name: Deploy to Environment
 on:
   push:
     branches:
-      - main
-      - master
       - QA
   workflow_dispatch:
 
@@ -386,7 +384,7 @@ jobs:
           ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} << 'ENDSSH'
             set -e
 
-            PROJECT_DIR="$HOME/gisulmatch-qa"
+            PROJECT_DIR="$HOME/community"
             mkdir -p "$PROJECT_DIR/backend"
             mkdir -p "$PROJECT_DIR/nginx"
 
@@ -409,7 +407,7 @@ jobs:
             # Stop all existing containers cleanly
             echo "🛑 Stopping existing containers..."
             docker compose down --remove-orphans || true
-            docker rm -f gisulmatch-qa-nginx gisulmatch-qa-backend gisulmatch-qa-frontend gisulmatch-qa-worker gisulmatch-qa-redis 2>/dev/null || true
+            docker rm -f gisulmatch-nginx gisulmatch-backend gisulmatch-frontend gisulmatch-worker gisulmatch-redis 2>/dev/null || true
 
             # Pull fresh images from GHCR
             echo "📦 Pulling latest images..."
@@ -431,16 +429,14 @@ jobs:
             docker compose ps
 
             echo "=== Nginx container logs ==="
-            docker logs gisulmatch-nginx --tail=20 || docker logs gisulmatch-qa-nginx --tail=20 || true
+            docker logs gisulmatch-nginx --tail=20 || true
 
             echo "=== Backend container logs ==="
-            docker logs gisulmatch-backend --tail=20 || docker logs gisulmatch-qa-backend --tail=20 || true
+            docker logs gisulmatch-backend --tail=20 || true
 
             # Verify nginx can reach backend internally
             echo "🔍 Testing internal backend connectivity..."
             docker exec gisulmatch-nginx wget -qO- http://backend:8000/health \
-              && echo "✅ Backend reachable from nginx" \
-              || docker exec gisulmatch-qa-nginx wget -qO- http://backend:8000/health \
               && echo "✅ Backend reachable from nginx" \
               || echo "⚠️  Backend not yet reachable — may still be starting"
 
@@ -461,6 +457,6 @@ jobs:
           else
             echo "⚠️ Health check returned $response — dumping logs..."
             ssh ${{ secrets.VM_NEW_USER }}@${{ secrets.VM_NEW_HOST }} \
-              "cd \$HOME/gisulmatch-qa && docker compose logs --tail=40"
+              "cd \$HOME/community && docker compose logs --tail=40"
             exit 1
           fi
