@@ -229,6 +229,12 @@ jobs:
             docker compose down --remove-orphans || true
             docker rm -f gisulmatch-nginx gisulmatch-backend gisulmatch-frontend gisulmatch-worker gisulmatch-redis 2>/dev/null || true
 
+            # Remove old images to force fresh pull
+            echo "🗑️ Removing old Docker images..."
+            docker rmi -f ghcr.io/${{ github.repository_owner }}/gisul-community-backend:latest 2>/dev/null || true
+            docker rmi -f ghcr.io/${{ github.repository_owner }}/gisul-community-frontend:latest 2>/dev/null || true
+            docker rmi -f ghcr.io/${{ github.repository_owner }}/gisul-community-celery:latest 2>/dev/null || true
+
             # Pull fresh images from GHCR
             echo "📦 Pulling latest images..."
             docker compose pull
@@ -405,6 +411,12 @@ jobs:
             REM Stop existing containers
             echo Stopping existing containers...
             docker compose down --remove-orphans 2>nul || echo No containers to stop
+
+            REM Remove old images to force fresh pull
+            echo Removing old Docker images...
+            docker rmi -f ghcr.io/${{ github.repository_owner }}/gisul-community-backend:latest 2>nul || echo Backend image removed
+            docker rmi -f ghcr.io/${{ github.repository_owner }}/gisul-community-frontend:latest 2>nul || echo Frontend image removed
+            docker rmi -f ghcr.io/${{ github.repository_owner }}/gisul-community-celery:latest 2>nul || echo Celery image removed
 
             REM Pull fresh images
             echo Pulling latest images...
